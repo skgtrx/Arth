@@ -5,28 +5,28 @@
   "theme_color": "#1e293b",
   "background_color": "#0f172a",
   "display": "standalone",
-  "scope": "/arth/",
-  "start_url": "/arth/",
+  "scope": "/Arth/",
+  "start_url": "/Arth/",
   "icons": [
     {
-      "src": "/arth/icons/icon-192x192.png",
+      "src": "/Arth/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/arth/icons/icon-512x512.png",
+      "src": "/Arth/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/arth/icons/icon-192x192.svg",
+      "src": "/Arth/icons/icon-192x192.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     },
     {
-      "src": "/arth/icons/icon-512x512.svg",
+      "src": "/Arth/icons/icon-512x512.svg",
       "sizes": "any",
       "type": "image/svg+xml"
     }

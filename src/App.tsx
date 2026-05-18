@@ -35,7 +35,7 @@ function AppShell() {
 export default function App() {
   return (
     <DatabaseProvider>
-      <BrowserRouter basename="/arth/">
+      <BrowserRouter basename="/Arth/">
         <AppShell />
       </BrowserRouter>
     </DatabaseProvider>

@@ -9,7 +9,7 @@ registerSW({ immediate: true });
 // GitHub Pages SPA: restore deep-link path from 404.html redirect
 const ghpParam = new URLSearchParams(window.location.search).get('ghp');
 if (ghpParam) {
-  window.history.replaceState(null, '', '/arth' + decodeURIComponent(ghpParam));
+  window.history.replaceState(null, '', '/Arth' + decodeURIComponent(ghpParam));
 }
 
 createRoot(document.getElementById('root')!).render(

@@ -29,7 +29,7 @@ export default defineConfig({
       ],
     }),
   ],
-  base: '/arth/',
+  base: '/Arth/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
