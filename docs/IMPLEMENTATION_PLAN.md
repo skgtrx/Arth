@@ -22,16 +22,16 @@
 | 12. Testing & QA | 🟡 Partial | 3/10 |
 | **14. PIN Authentication** | ✅ Complete | 6/6 |
 | **15. Seed Data Cleanup** | ⬜ Not started | 0/4 |
-| **16. Sync UI & Google Drive Go-Live** | ⬜ Not started | 0/8 |
+| **16. Sync UI & Google Drive Go-Live** | ✅ Complete | 8/8 |
 | 13. Go-Live | ⬜ Not started | 0/4 |
 
-**Overall: ~90/107 tasks complete.**
+**Overall: ~98/107 tasks complete.**
 
 ### What's Next (priority order)
 
 1. ~~**Stage 14: PIN Authentication**~~ ✅ Complete
-2. **Stage 15: Seed Data Cleanup** — Anonymize or remove personal data from public repo
-3. **Stage 16: Sync UI** — Wire Google Drive sync into the app, sign in/out, auto-sync
+2. ~~**Stage 16: Sync UI**~~ ✅ Complete — Google Drive sync wired in, sign in/out, auto-sync
+3. **Stage 15: Seed Data Cleanup** — Anonymize or remove personal data from public repo
 4. **Stage 12: Testing & QA** — Component tests, mobile device testing
 5. **Stage 13: Go-Live** — Verify data, install PWA, start daily use
 
@@ -171,11 +171,11 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 4.1 | Set up Google Cloud project | ⬜ | Manual step: Create project, enable Drive API, configure OAuth consent screen (Testing mode), create OAuth client ID (Web application). Deferred to deployment time. |
+| 4.1 | Set up Google Cloud project | ✅ | Project "Arth" created, Drive API enabled, OAuth consent (Testing mode), Client ID created. Done in Stage 16.1. |
 | 4.2 | Implement Google OAuth flow | ✅ | `sync/auth.ts` — `GoogleAuth` class wrapping GIS Token Model. Sign in, token management (memory-only), sign out, auth state listeners. |
 | 4.3 | Implement Drive file operations | ✅ | `sync/drive.ts` — `DriveClient` class wrapping Drive REST API v3 via raw `fetch()`. ensureFolder, findFile, uploadDatabase (create/update), downloadDatabase, getFileMetadata, resetCache. |
 | 4.4 | Implement SyncManager | ✅ | `sync/sync-manager.ts` — `SyncManager` class orchestrating debounced upload (30s), download on app load, version comparison (local vs remote timestamps), last-write-wins resolution, concurrent sync prevention. |
-| 4.5 | Add sync status UI | ⬜ | Deferred to Stage 5 (UI Shell). `useSync` hook stub with `SyncState` types ready. |
+| 4.5 | Add sync status UI | ✅ | Implemented in Stage 16. TopBar sync indicator, Home/Settings sync buttons, `useSync` hook + `SyncProvider`. |
 | 4.6 | Handle offline → online transition | ✅ | `SyncManager` listens to `online`/`offline` events, triggers sync on reconnection. |
 | 4.7 | Write tests for sync logic | ✅ | 37 tests: auth (10), drive (12), sync-manager (15). Debounce, conflict resolution, offline queuing, error handling all covered. 158 total tests pass. |
 
@@ -362,13 +362,13 @@ For consecutive rows in CSV:
 | # | Task | Status | Details |
 |---|------|--------|---------|
 | 16.1 | Set up Google Cloud project | ✅ | Project "Arth" created, Drive API enabled, OAuth consent (Testing mode), Client ID created. Origins: localhost:5173 + skgtrx.github.io. Repo variable set. |
-| 16.2 | Implement `useSync` hook | ⬜ | Full implementation: instantiate `GoogleAuth` + `DriveClient` + `SyncManager`, expose `signIn`, `signOut`, `syncNow`, `syncState`, `isSignedIn`. Read `VITE_GOOGLE_CLIENT_ID` from env. |
-| 16.3 | Add sync context/provider | ⬜ | `SyncProvider` wrapping the app. Initializes auth on mount, listens for state changes, provides context to all components. |
-| 16.4 | Sign in / sign out UI | ⬜ | Settings page → Google account section. "Sign in with Google" button when signed out, account info + "Sign out" when signed in. |
-| 16.5 | Sync status in TopBar | ⬜ | Wire `syncState` from context into `TopBar` component. Show synced/syncing/offline/error status. |
-| 16.6 | Auto-sync on mutations | ⬜ | After every `persistDatabase()` call, trigger `SyncManager.scheduleUpload()` (30s debounce). |
-| 16.7 | Sync on app load | ⬜ | On app startup (if signed in): compare local vs remote timestamps, download if remote is newer, upload if local is newer. |
-| 16.8 | Manual sync button | ⬜ | Home dashboard "Sync Now" button. Also accessible from Settings. Shows last synced timestamp. |
+| 16.2 | Implement `useSync` hook | ✅ | `useSync()` re-exports from `SyncContext`. Exposes `signIn`, `signOut`, `syncNow`, `scheduleUpload`, `syncState`, `isSignedIn`. |
+| 16.3 | Add sync context/provider | ✅ | `SyncProvider` in `context/SyncContext.tsx`. Initializes `GoogleAuth` + `DriveClient` + `SyncManager` on mount. Wraps app inside `DatabaseProvider`. |
+| 16.4 | Sign in / sign out UI | ✅ | Settings page → `SyncSection` card. "Sign in with Google" / "Connected + Sign out" + "Sync Now" button. |
+| 16.5 | Sync status in TopBar | ✅ | `AppShell` reads `syncState` → maps to TopBar `syncStatus` prop. Added `error` state with `text-danger`. |
+| 16.6 | Auto-sync on mutations | ✅ | All pages (Home, Transactions, Balance, Settings) call `scheduleUpload()` after `persistDatabase()`. 30s debounce via `SyncManager`. |
+| 16.7 | Sync on app load | ✅ | `SyncProvider` `onAuthChange` listener triggers `manager.sync()` on sign-in — compares local vs remote timestamps, uploads or downloads. |
+| 16.8 | Manual sync button | ✅ | Home dashboard "Sync Now" button (when signed in). Also in Settings `SyncSection`. Shows last synced timestamp. |
 
 ### Prerequisites
 
