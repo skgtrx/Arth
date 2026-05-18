@@ -64,10 +64,6 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 
         if (persisted) {
           if (mounted) setLastModified(persisted.lastModified);
-        } else {
-          const data = exportDatabase();
-          const timestamp = await saveDatabase(data);
-          if (mounted) setLastModified(timestamp);
         }
 
         if (mounted) {
