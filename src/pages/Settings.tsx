@@ -5,6 +5,7 @@ import AccountsSection from './settings/AccountsSection';
 import FundsSection from './settings/FundsSection';
 import CategoriesSection from './settings/CategoriesSection';
 import SubCategoriesSection from './settings/SubCategoriesSection';
+import PinSection from './settings/PinSection';
 
 const TABS = ['Accounts', 'Funds', 'Categories', 'Sub-Categories'] as const;
 type Tab = (typeof TABS)[number];
@@ -25,6 +26,8 @@ export default function Settings() {
   return (
     <div className="space-y-4 py-4">
       <h2 className="text-2xl font-bold">Settings</h2>
+
+      <PinSection db={db} />
 
       <div className="flex gap-2 overflow-x-auto py-1">
         {TABS.map((tab) => (

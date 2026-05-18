@@ -6,7 +6,19 @@ interface Migration {
   up: (db: Database) => void;
 }
 
-const MIGRATIONS: Migration[] = [];
+const MIGRATIONS: Migration[] = [
+  {
+    version: 2,
+    up: (db: Database) => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS app_settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL
+        );
+      `);
+    },
+  },
+];
 
 export function runMigrations(db: Database): void {
   const currentVersion = getSchemaVersion(db);

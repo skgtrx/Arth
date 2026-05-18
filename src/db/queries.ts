@@ -465,3 +465,25 @@ export function getCreditCardAnnualSpend(db: Database, startDate: string, endDat
     [startDate, endDate]
   );
 }
+
+// ─── App Settings (PIN) ─────────────────────────────
+
+export function getAppSetting(db: Database, key: string): string | null {
+  const row = queryOne<{ value: string }>(
+    db,
+    'SELECT value FROM app_settings WHERE key = ?',
+    [key]
+  );
+  return row ? row.value : null;
+}
+
+export function setAppSetting(db: Database, key: string, value: string): void {
+  db.run(
+    'INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)',
+    [key, value]
+  );
+}
+
+export function deleteAppSetting(db: Database, key: string): void {
+  db.run('DELETE FROM app_settings WHERE key = ?', [key]);
+}
