@@ -76,13 +76,13 @@ export default function CategoryTrendChart({ data }: Props) {
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={chartData} margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
           <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={(v) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={(v: number) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
           <Tooltip
-            formatter={(value, name) => [formatINR(Number(value)), String(name)]}
+            formatter={(value, name) => [formatINR(Number(value ?? 0)), String(name ?? '')]}
             {...TOOLTIP_STYLE}
           />
           <Legend
-            onClick={(e) => handleLegendClick(e.dataKey as string)}
+            onClick={(data) => handleLegendClick(String(data.dataKey ?? ''))}
             wrapperStyle={{ cursor: 'pointer', fontSize: 12 }}
           />
           {categories.map((cat, i) => (

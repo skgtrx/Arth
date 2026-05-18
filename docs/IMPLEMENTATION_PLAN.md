@@ -1,8 +1,28 @@
 # Arth — Implementation Plan
 
-**Version:** 1.0
-**Date:** 2026-05-17
+**Version:** 1.1
+**Date:** 2026-05-18
 **PRD Reference:** [docs/PRD.md](./PRD.md)
+
+### Progress Summary
+
+| Stage | Status | Completion |
+|-------|--------|------------|
+| 1. Project Setup & Tooling | ✅ Complete | 7/7 |
+| 2. Database Layer | ✅ Complete | 11/11 |
+| 3. IndexedDB Persistence | ✅ Complete | 4/4 |
+| 4. Google Drive Sync | ✅ Complete | 7/7 (4.1 deferred to deploy) |
+| 5. UI Shell | ✅ Complete | 8/8 |
+| 6. Settings | ✅ Complete | 6/6 |
+| 7. Transactions | ✅ Complete | 9/9 |
+| 8. Home Dashboard | ✅ Complete | 5/5 |
+| 9. Balance Sheet | ✅ Complete | 6/6 |
+| 10. Analytics | ✅ Complete | 8/9 (budget vs actual deferred) |
+| 11. PWA & Deployment | 🟡 Partial | 8/11 (3 manual steps remain) |
+| 12. Testing & QA | 🟡 Partial | 3/10 |
+| 13. Go-Live | ⬜ Not started | 0/4 |
+
+**Overall: ~84/95 tasks complete. Remaining: 3 manual deployment steps (Stage 11) and QA (Stage 12/13).**
 
 ---
 
@@ -184,12 +204,12 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 6.1 | Build Settings page | ⬜ | Tabs or sections: Accounts, Funds, Categories, Sub-Categories |
-| 6.2 | Accounts management | ⬜ | List accounts, add new (name + type dropdown), edit name/type, deactivate (soft delete). Types: bank, credit_card, wallet, cash, investment |
-| 6.3 | Funds management | ⬜ | List funds, add new (name), edit name, deactivate |
-| 6.4 | Categories management | ⬜ | List categories, add new (name), edit name, deactivate |
-| 6.5 | Sub-categories management | ⬜ | List grouped by parent category, add new (name + parent category), edit, deactivate |
-| 6.6 | Ensure deactivated items hidden from dropdowns | ⬜ | Deactivated accounts/funds/categories don't appear in transaction/transfer forms but remain in historical data |
+| 6.1 | Build Settings page | ✅ | Tabbed layout (Accounts, Funds, Categories, Sub-Categories) with shared `EntityList` component |
+| 6.2 | Accounts management | ✅ | `AccountsSection.tsx` — list, add (name + type dropdown), edit, deactivate. Types: bank, credit_card, wallet, cash, investment |
+| 6.3 | Funds management | ✅ | `FundsSection.tsx` — list, add, edit name, deactivate |
+| 6.4 | Categories management | ✅ | `CategoriesSection.tsx` — list, add, edit name, deactivate |
+| 6.5 | Sub-categories management | ✅ | `SubCategoriesSection.tsx` — grouped by parent category, add (name + parent), edit, deactivate |
+| 6.6 | Ensure deactivated items hidden from dropdowns | ✅ | Active-only filtering in transaction/transfer form dropdowns; deactivated items preserved in historical data |
 
 ---
 
@@ -199,15 +219,15 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 7.1 | Build Add Transaction form | ⬜ | Full form: Date (default today), Category dropdown, Sub-Category dropdown (filtered by category), Transaction Type toggle (Credit/Debit), Fund dropdown, Account dropdown, Amount (numeric, ₹), Comments (text). Validation: all fields except Comments required. |
-| 7.2 | Build Transfer form | ⬜ | Source Fund + Account, Dest Fund + Account, Amount, Date, Comments. "+ Add another leg" button adds additional source→dest pair. All legs get shared transfer_id. |
-| 7.3 | Build Transaction list | ⬜ | Scrollable list, newest first. Card UI: collapsed shows Date, Category, Amount, Account. |
-| 7.4 | Build Transaction card expand/collapse | ⬜ | Tap card → expand to show all fields + Edit/Delete buttons. Transfer groups shown as single grouped card with all legs visible. |
-| 7.5 | Build filter bar | ⬜ | Date range presets (This Month, This FY, Last Month, Custom), Category multi-select, Fund multi-select, Account multi-select, Transaction Type filter |
-| 7.6 | Implement edit transaction | ⬜ | Tap Edit → opens Add Transaction form pre-filled → save updates in place |
-| 7.7 | Implement edit transfer | ⬜ | Tap Edit on grouped card → opens Transfer form with all legs pre-filled |
-| 7.8 | Implement delete transaction | ⬜ | Swipe or tap Delete → confirmation dialog → delete row |
-| 7.9 | Implement delete transfer group | ⬜ | Delete any leg → prompt "Delete all X legs of this transfer?" → delete all rows with same transfer_id |
+| 7.1 | Build Add Transaction form | ✅ | `TransactionForm.tsx` — date (default today), category/sub-category (filtered), type toggle, fund, account, amount (₹), comments. All required except comments. |
+| 7.2 | Build Transfer form | ✅ | `TransferForm.tsx` — source/dest fund+account, amount, date, comments. Multi-leg support with "+ Add another leg". Shared `transfer_id`. |
+| 7.3 | Build Transaction list | ✅ | Scrollable list, newest first. `TransactionCard.tsx` collapsed: date, category, amount, account. |
+| 7.4 | Build Transaction card expand/collapse | ✅ | Tap to expand showing all fields + Edit/Delete. Transfer groups shown as grouped cards with all legs. |
+| 7.5 | Build filter bar | ✅ | `FilterBar.tsx` — date range presets (This Month, This FY, Last Month, Custom), category/fund/account multi-select, transaction type filter |
+| 7.6 | Implement edit transaction | ✅ | Edit button opens `TransactionForm` pre-filled → save updates in place |
+| 7.7 | Implement edit transfer | ✅ | Edit on grouped card opens `TransferForm` with all legs pre-filled |
+| 7.8 | Implement delete transaction | ✅ | Delete button → confirmation modal → delete row |
+| 7.9 | Implement delete transfer group | ✅ | Delete any leg → "Delete all X legs?" prompt → deletes all rows with same `transfer_id` |
 
 ---
 
@@ -217,11 +237,11 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 8.1 | Build Dashboard layout | ⬜ | Vertically scrollable cards |
-| 8.2 | Sync status card | ⬜ | "Last synced: X ago" or "Offline" + manual Sync button |
-| 8.3 | Fund balances summary | ⬜ | Cards showing each fund's total balance (non-zero only) |
-| 8.4 | Monthly spend summary | ⬜ | Total spent this month + top 3 categories with amounts |
-| 8.5 | Quick-action buttons | ⬜ | Prominent "Add Transaction" and "Transfer" buttons, easy to tap |
+| 8.1 | Build Dashboard layout | ✅ | `Home.tsx` — vertically scrollable cards |
+| 8.2 | Sync status card | ✅ | "Last synced: X ago" or "Offline" + manual Sync button |
+| 8.3 | Fund balances summary | ✅ | Cards showing each fund's total balance (non-zero only) |
+| 8.4 | Monthly spend summary | ✅ | Total spent this month + top 3 categories with amounts |
+| 8.5 | Quick-action buttons | ✅ | Prominent "Add Transaction" and "Transfer" buttons |
 
 ---
 
@@ -231,12 +251,12 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 9.1 | Build Balance page with 3 sub-tabs | ⬜ | Tab bar: "By Account" (default), "By Fund", "Matrix" |
-| 9.2 | By Account view | ⬜ | Account-centric cards: account name + computed total, fund breakdown (non-zero only) |
-| 9.3 | Reconciliation feature | ⬜ | "Actual balance" input field per account card. Shows difference (app - actual). Actions: "Add Missing Transaction" (opens transaction form, difference updates on return), "Settle Difference" (opens pre-filled form: Category=Other, SubCategory=Other, amount=difference). "Exit Reconciliation" clears input. Actual balance editable anytime during session. |
-| 9.4 | By Fund view | ⬜ | Fund-centric cards: fund name + total, account breakdown (non-zero only) |
-| 9.5 | Matrix view | ⬜ | Full grid: funds as rows, accounts as columns. Horizontally scrollable. Row totals, column totals. |
-| 9.6 | Lend/Borrow view | ⬜ | Accessible from Balance page (toggle or additional tab). Shows per-person: outstanding lent amount, outstanding borrowed amount. Computed from transactions where category = Lend/Borrow. |
+| 9.1 | Build Balance page with 3 sub-tabs | ✅ | `Balance.tsx` — tab bar: "By Account" (default), "By Fund", "Matrix", "Lend/Borrow" |
+| 9.2 | By Account view | ✅ | `ByAccountView.tsx` — account cards with computed totals, fund breakdown (non-zero only) |
+| 9.3 | Reconciliation feature | ✅ | Actual balance input per account card, difference display, "Add Missing Transaction" and "Settle Difference" actions |
+| 9.4 | By Fund view | ✅ | `ByFundView.tsx` — fund cards with totals, account breakdown (non-zero only) |
+| 9.5 | Matrix view | ✅ | `MatrixView.tsx` — full grid: funds as rows, accounts as columns. Horizontally scrollable. Row/column totals. |
+| 9.6 | Lend/Borrow view | ✅ | `LendBorrowView.tsx` — per-person outstanding lent/borrowed amounts from Lend/Borrow category transactions |
 
 ---
 
@@ -246,15 +266,15 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 10.1 | Install charting library | ⬜ | Chart.js + react-chartjs-2 (or Recharts — decide during implementation) |
-| 10.2 | Build Analytics page layout | ⬜ | Time scope selector (This Month / This Year / This FY / Custom), scrollable chart cards below |
-| 10.3 | Spend by category chart | ⬜ | Pie chart or horizontal bar chart: total spend per category for selected period |
-| 10.4 | Monthly spend trend | ⬜ | Line chart: total spending per month over time |
-| 10.5 | Category trend over time | ⬜ | Multi-line chart: per-category spending across months. Allow toggling categories on/off. |
-| 10.6 | Savings rate | ⬜ | Per-month bar chart: percentage of income that went to savings/investment categories |
-| 10.7 | Cashback & rewards | ⬜ | Per-month summary: total cashback earned (sum of Cashback category credits) |
-| 10.8 | Credit card annual spend | ⬜ | Per credit card: total annual spend, useful for fee waiver tracking |
-| 10.9 | Budget vs actual (static reference) | ⬜ | If budget data exists, show comparison: budgeted amount vs actual spend per budget category |
+| 10.1 | Install charting library | ✅ | Recharts v3.8.1 installed (chose over Chart.js for declarative React API) |
+| 10.2 | Build Analytics page layout | ✅ | `Analytics.tsx` — `TimeScopeSelector` (This Month / This Year / This FY / Custom), scrollable chart cards. `useAnalytics` hook for data. |
+| 10.3 | Spend by category chart | ✅ | `SpendByCategoryChart.tsx` — horizontal bar chart with category breakdown for selected period |
+| 10.4 | Monthly spend trend | ✅ | `MonthlySpendChart.tsx` — line chart: total spending per month over time |
+| 10.5 | Category trend over time | ✅ | `CategoryTrendChart.tsx` — multi-line chart: per-category spending across months with legend toggles |
+| 10.6 | Savings rate | ✅ | `SavingsRateChart.tsx` — per-month bar chart: savings/investment as percentage of income |
+| 10.7 | Cashback & rewards | ✅ | `CashbackChart.tsx` — per-month summary of total cashback earned |
+| 10.8 | Credit card annual spend | ✅ | `CreditCardSpendChart.tsx` — per credit card annual spend, useful for fee waiver tracking |
+| 10.9 | Budget vs actual (static reference) | ⬜ | Deferred — requires budget data model not yet implemented |
 
 ---
 
@@ -264,15 +284,17 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 11.1 | Configure vite-plugin-pwa | ⬜ | Service worker with precaching of app shell, runtime caching for Google API calls |
-| 11.2 | Create manifest.json | ⬜ | App name "Arth", short_name "Arth", theme_color, background_color, display: standalone, icons |
-| 11.3 | Generate app icons | ⬜ | 192x192 and 512x512 PNG icons |
-| 11.4 | Test PWA install flow | ⬜ | Install on Android Chrome, iOS Safari. Verify home screen icon, standalone mode, offline capability. |
-| 11.5 | Create GitHub repository | ⬜ | `arth` repo, push codebase |
-| 11.6 | Configure GitHub Pages deployment | ⬜ | GitHub Actions workflow: on push to main → build → deploy to `gh-pages` branch |
-| 11.7 | Configure Vite base path | ⬜ | Set `base: '/arth/'` in vite.config.ts for GitHub Pages sub-path |
-| 11.8 | Update OAuth redirect URIs | ⬜ | Add GitHub Pages URL to Google Cloud Console authorized origins/redirects |
-| 11.9 | End-to-end deployment test | ⬜ | Full flow on production URL: sign in → sync → add transaction → view balance → offline → reconnect |
+| 11.1 | Configure vite-plugin-pwa | ✅ | SW registration in `main.tsx` via `registerSW({ immediate: true })`, workbox precaching 9 entries, types in tsconfig |
+| 11.2 | Create manifest.json | ✅ | `manifest.webmanifest` with PNG + SVG icon entries, proper `/arth/` scope and start_url |
+| 11.3 | Generate app icons | ✅ | 192x192 & 512x512 in both SVG and PNG. `scripts/generate-icons.mjs` for proper PNG rendering. |
+| 11.4 | Test PWA install flow | ⬜ | **Manual:** Install on Android Chrome, iOS Safari. Verify home screen icon, standalone mode, offline. |
+| 11.5 | Create GitHub repository | ✅ | `skgtrx/Arth` on personal GitHub |
+| 11.6 | Configure GitHub Pages deployment | ✅ | `.github/workflows/deploy.yml` — Actions deploys on push to main. Uses `VITE_GOOGLE_CLIENT_ID` from repo vars. |
+| 11.7 | Configure Vite base path | ✅ | `base: '/arth/'` in vite.config.ts, BrowserRouter basename, manifest scope all aligned |
+| 11.8 | Update OAuth redirect URIs | ⬜ | **Manual:** Add `https://skgtrx.github.io` to Google Cloud Console authorized origins/redirects |
+| 11.9 | End-to-end deployment test | ⬜ | **Manual:** Full flow on production URL after first deploy |
+| 11.10 | SPA routing on GitHub Pages | ✅ | `404.html` redirect + `main.tsx` route restoration for deep links |
+| 11.11 | Environment config | ✅ | `.env.example` documenting `VITE_GOOGLE_CLIENT_ID`, GH Actions reads from repo vars |
 
 ---
 
@@ -284,7 +306,7 @@ For consecutive rows in CSV:
 |---|------|--------|---------|
 | 12.1 | Unit tests — database layer | ✅ | 75 tests: schema constraints, CRUD, balance computations, transfer pairing, seed integrity (done in Stage 2) |
 | 12.2 | Unit tests — utility functions | ✅ | 36 tests: currency formatting, date parsing, FY calculations, CSV parser (done in Stage 2) |
-| 12.3 | Unit tests — sync logic | ⬜ | Debounce, conflict resolution, offline handling |
+| 12.3 | Unit tests — sync logic | ✅ | 37 tests in Stage 4: auth (10), drive (12), sync-manager (15). Debounce, conflict resolution, offline handling covered. |
 | 12.4 | Component tests — forms | ⬜ | Transaction form validation, transfer form multi-leg behavior, dropdown filtering |
 | 12.5 | Component tests — views | ⬜ | Balance sheet computation, analytics chart data preparation, filter behavior |
 | 12.6 | Mobile device testing | ⬜ | Test on actual Android phone + iOS phone. Verify: touch targets, scroll behavior, keyboard handling for numeric input, PWA install, offline usage. |

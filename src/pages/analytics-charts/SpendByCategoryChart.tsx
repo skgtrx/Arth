@@ -52,10 +52,10 @@ export default function SpendByCategoryChart({ data }: Props) {
       {view === 'bar' ? (
         <ResponsiveContainer width="100%" height={data.length * 40 + 20}>
           <BarChart data={chartData} layout="vertical" margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
-            <XAxis type="number" tickFormatter={(v) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+            <XAxis type="number" tickFormatter={(v: number) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
             <YAxis type="category" dataKey="name" width={100} tick={AXIS_TICK} axisLine={false} tickLine={false} />
             <Tooltip
-              formatter={(value) => [formatINR(Number(value)), 'Amount']}
+              formatter={(value) => [formatINR(Number(value ?? 0)), 'Amount']}
               {...TOOLTIP_STYLE}
               itemStyle={{ color: '#10b981' }}
             />
@@ -84,7 +84,7 @@ export default function SpendByCategoryChart({ data }: Props) {
               ))}
             </Pie>
             <Tooltip
-              formatter={(value) => [formatINR(Number(value)), 'Amount']}
+              formatter={(value) => [formatINR(Number(value ?? 0)), 'Amount']}
               {...TOOLTIP_STYLE}
               itemStyle={{ color: '#94a3b8' }}
             />

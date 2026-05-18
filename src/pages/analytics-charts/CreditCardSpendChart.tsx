@@ -32,10 +32,10 @@ export default function CreditCardSpendChart({ data }: Props) {
       <h3 className="text-base font-semibold text-text-primary mb-4">Credit Card Spend</h3>
       <ResponsiveContainer width="100%" height={data.length * 48 + 20}>
         <BarChart data={chartData} layout="vertical" margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
-          <XAxis type="number" tickFormatter={(v) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+          <XAxis type="number" tickFormatter={(v: number) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
           <YAxis type="category" dataKey="name" width={120} tick={AXIS_TICK} axisLine={false} tickLine={false} />
           <Tooltip
-            formatter={(value) => [formatINR(Number(value)), 'Total Spend']}
+            formatter={(value) => [formatINR(Number(value ?? 0)), 'Total Spend']}
             {...TOOLTIP_STYLE}
           />
           <Bar dataKey="value" radius={[0, 4, 4, 0]}>
