@@ -26,7 +26,7 @@ export default function Settings() {
     <div className="space-y-4 py-4">
       <h2 className="text-2xl font-bold">Settings</h2>
 
-      <div className="flex gap-2 overflow-x-auto py-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="flex gap-2 overflow-x-auto py-1">
         {TABS.map((tab) => (
           <Button
             key={tab}

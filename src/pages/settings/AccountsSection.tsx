@@ -22,13 +22,7 @@ const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
   { value: 'investment', label: 'Investment' },
 ];
 
-const TYPE_LABELS: Record<AccountType, string> = {
-  bank: 'Bank',
-  credit_card: 'Credit Card',
-  wallet: 'Wallet',
-  cash: 'Cash',
-  investment: 'Investment',
-};
+const TYPE_LABELS = new Map(ACCOUNT_TYPES.map((t) => [t.value, t.label]));
 
 export default function AccountsSection({ db, persistDatabase }: Props) {
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -122,7 +116,7 @@ export default function AccountsSection({ db, persistDatabase }: Props) {
         getId={(a) => a.id}
         getName={(a) => a.name}
         getIsActive={(a) => a.isActive}
-        getSubtitle={(a) => TYPE_LABELS[a.type]}
+        getSubtitle={(a) => TYPE_LABELS.get(a.type)}
         onEdit={openEdit}
         onAdd={openAdd}
         addLabel="Add Account"
