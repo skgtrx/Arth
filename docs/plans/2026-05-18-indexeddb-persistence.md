@@ -90,7 +90,7 @@ export async function getLastModified(): Promise<string | null> {
 ### Key details
 
 - `openDatabase()` is private. It opens and creates the store on version 1, then returns the `IDBDatabase` handle.
-- Each public function opens, does its work, then closes the connection. This avoids holding long-lived connections (IndexedDB best practice for infrequent access patterns).
+- Each public function opens, does its work, then closes the connection. This avoids holding long-lived connections (IndexedDB best practice for infrequent access patterns). The connection churn is acceptable given the expected mutation rate (~a few per minute at most).
 - `saveDatabase` writes both the binary data and the timestamp atomically as a single record in a single `put()` call.
 - `saveDatabase` returns the ISO timestamp so callers can track it without an extra read.
 - `loadDatabase` returns both `data` and `lastModified` together (or null if nothing stored), avoiding a second round-trip.
@@ -152,9 +152,15 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
       try {
         const persisted = await loadDatabase();
 
-        const database = persisted
-          ? await initDatabase(persisted.data)
-          : await initDatabase();
+        let database: Database;
+        try {
+          database = persisted
+            ? await initDatabase(persisted.data)
+            : await initDatabase();
+        } catch (loadError) {
+          console.warn('Failed to load persisted database, starting fresh:', loadError);
+          database = await initDatabase();
+        }
 
         runMigrations(database);
 
@@ -218,6 +224,7 @@ export function useDatabaseContext(): DatabaseContextValue {
    - First tries `loadDatabase()` from IndexedDB
    - If data found, passes `persisted.data` to `initDatabase(existingData)` — restoring the persisted database. Sets `lastModified` from `persisted.lastModified` (no re-persist needed).
    - If no data found, creates fresh DB, seeds, then saves to IndexedDB immediately (first-time setup)
+   - **Corruption recovery:** If `initDatabase(persisted.data)` throws (corrupt IndexedDB data), catches the error and falls back to a fresh database with `console.warn`. This prevents the app from getting stuck if IndexedDB contains invalid data.
 6. **Context value expanded:** Now includes `lastModified` and `persistDatabase`
 
 ---
@@ -283,6 +290,7 @@ export function useDatabase(): DatabaseReady | DatabaseLoading {
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
 import 'fake-indexeddb/auto';
+import { IDBFactory } from 'fake-indexeddb';
 import { saveDatabase, loadDatabase, getLastModified } from '../persistence';
 
 beforeEach(() => {

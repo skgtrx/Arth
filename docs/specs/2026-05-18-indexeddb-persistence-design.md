@@ -50,7 +50,7 @@ The implementation plan says "Auto-save on every DB mutation." Since sql.js `exp
 
 The `DatabaseProvider` in `src/context/DatabaseContext.tsx` is the single place where the database is initialized. It will be modified to:
 
-1. **On startup:** Try loading from IndexedDB first. If found, pass the `Uint8Array` to `initDatabase(existingData)`. If not found, create a fresh DB and seed it, then persist to IndexedDB.
+1. **On startup:** Try loading from IndexedDB first. If found, pass the `Uint8Array` to `initDatabase(existingData)`. If loading fails (corrupt data), fall back to a fresh database with a `console.warn`. If nothing is found, create a fresh DB and seed it, then persist to IndexedDB.
 2. **Expose a `persistDatabase` callback** in the context that serializes the current db to IndexedDB.
 
 ### 3. Explicit persist calls
