@@ -140,13 +140,13 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 4.1 | Set up Google Cloud project | ⬜ | Create project, enable Drive API, configure OAuth consent screen (Testing mode), create OAuth client ID (Web application) |
-| 4.2 | Implement Google OAuth flow | ⬜ | `sync/auth.ts` — sign in, token management, sign out. Use Google Identity Services (GIS) library. |
-| 4.3 | Implement Drive file operations | ⬜ | `sync/drive.ts` — createFolder(), uploadFile(), downloadFile(), getFileMetadata() for the `Arth/` folder and `finance.db` file |
-| 4.4 | Implement SyncManager | ⬜ | `sync/sync-manager.ts` — orchestrates: debounced upload (30s), download on app load, version comparison (local vs remote timestamps), last-write-wins resolution |
-| 4.5 | Add sync status UI | ⬜ | Display "Last synced: X ago" / "Syncing..." / "Offline" in the top bar. Manual "Sync" button. |
-| 4.6 | Handle offline → online transition | ⬜ | Detect connectivity changes, trigger sync when back online |
-| 4.7 | Write tests for sync logic | ⬜ | Test debounce behavior, conflict resolution, offline queuing |
+| 4.1 | Set up Google Cloud project | ⬜ | Manual step: Create project, enable Drive API, configure OAuth consent screen (Testing mode), create OAuth client ID (Web application). Deferred to deployment time. |
+| 4.2 | Implement Google OAuth flow | ✅ | `sync/auth.ts` — `GoogleAuth` class wrapping GIS Token Model. Sign in, token management (memory-only), sign out, auth state listeners. |
+| 4.3 | Implement Drive file operations | ✅ | `sync/drive.ts` — `DriveClient` class wrapping Drive REST API v3 via raw `fetch()`. ensureFolder, findFile, uploadDatabase (create/update), downloadDatabase, getFileMetadata, resetCache. |
+| 4.4 | Implement SyncManager | ✅ | `sync/sync-manager.ts` — `SyncManager` class orchestrating debounced upload (30s), download on app load, version comparison (local vs remote timestamps), last-write-wins resolution, concurrent sync prevention. |
+| 4.5 | Add sync status UI | ⬜ | Deferred to Stage 5 (UI Shell). `useSync` hook stub with `SyncState` types ready. |
+| 4.6 | Handle offline → online transition | ✅ | `SyncManager` listens to `online`/`offline` events, triggers sync on reconnection. |
+| 4.7 | Write tests for sync logic | ✅ | 37 tests: auth (10), drive (12), sync-manager (15). Debounce, conflict resolution, offline queuing, error handling all covered. 158 total tests pass. |
 
 ### Google Cloud Project Setup Notes
 
