@@ -15,13 +15,8 @@ type Tab = (typeof TABS)[number];
 
 export default function Settings() {
   const { db, isLoading, persistDatabase } = useDatabase();
-  const { syncState, isSignedIn, signIn, signOut, syncNow, scheduleUpload } = useSync();
+  const { syncState, syncNow } = useSync();
   const [activeTab, setActiveTab] = useState<Tab>('Accounts');
-
-  const handlePersist = async () => {
-    await persistDatabase();
-    scheduleUpload();
-  };
 
   if (isLoading || !db) {
     return (
@@ -36,13 +31,7 @@ export default function Settings() {
     <div className="space-y-4 py-4">
       <h2 className="text-2xl font-bold">Settings</h2>
 
-      <SyncSection
-        isSignedIn={isSignedIn}
-        syncState={syncState}
-        signIn={signIn}
-        signOut={signOut}
-        syncNow={syncNow}
-      />
+      <SyncSection syncState={syncState} syncNow={syncNow} />
 
       <PinSection db={db} />
 
@@ -60,10 +49,10 @@ export default function Settings() {
         ))}
       </div>
 
-      {activeTab === 'Accounts' && <AccountsSection db={db} persistDatabase={handlePersist} />}
-      {activeTab === 'Funds' && <FundsSection db={db} persistDatabase={handlePersist} />}
-      {activeTab === 'Categories' && <CategoriesSection db={db} persistDatabase={handlePersist} />}
-      {activeTab === 'Sub-Categories' && <SubCategoriesSection db={db} persistDatabase={handlePersist} />}
+      {activeTab === 'Accounts' && <AccountsSection db={db} persistDatabase={persistDatabase} />}
+      {activeTab === 'Funds' && <FundsSection db={db} persistDatabase={persistDatabase} />}
+      {activeTab === 'Categories' && <CategoriesSection db={db} persistDatabase={persistDatabase} />}
+      {activeTab === 'Sub-Categories' && <SubCategoriesSection db={db} persistDatabase={persistDatabase} />}
 
       <p className="pt-4 text-center text-xs text-text-muted">
         Arth v{__APP_VERSION__} · Built {new Date(__BUILD_TIME__).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
@@ -73,33 +62,18 @@ export default function Settings() {
 }
 
 function SyncSection({
-  isSignedIn,
   syncState,
-  signIn,
-  signOut,
   syncNow,
 }: {
-  isSignedIn: boolean;
   syncState: import('@/types').SyncState;
-  signIn: () => Promise<void>;
-  signOut: () => Promise<void>;
   syncNow: () => Promise<void>;
 }) {
   const [loading, setLoading] = useState(false);
 
-  const handleSignIn = async () => {
+  const handleSync = async () => {
     setLoading(true);
     try {
-      await signIn();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignOut = async () => {
-    setLoading(true);
-    try {
-      await signOut();
+      await syncNow();
     } finally {
       setLoading(false);
     }
@@ -112,50 +86,31 @@ function SyncSection({
           Google Drive Sync
         </h3>
 
-        {isSignedIn ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-text-secondary">Connected</span>
-                <Badge variant="success">Signed in</Badge>
-              </div>
-              <Button size="sm" variant="ghost" onClick={handleSignOut} disabled={loading}>
-                Sign out
-              </Button>
-            </div>
-            {syncState.lastSyncedAt && (
-              <p className="text-xs text-text-muted">
-                Last synced: {new Date(syncState.lastSyncedAt).toLocaleString('en-IN')}
-              </p>
-            )}
-            {syncState.error && (
-              <p className="text-xs text-danger">{syncState.error}</p>
-            )}
-            <Button
-              size="sm"
-              variant="secondary"
-              className="w-full"
-              onClick={() => syncNow()}
-              disabled={syncState.status === 'syncing'}
-            >
-              {syncState.status === 'syncing' ? 'Syncing…' : 'Sync Now'}
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-sm text-text-secondary">
-              Back up your database to Google Drive. Only you can access the file.
-            </p>
-            <Button
-              size="sm"
-              variant="primary"
-              className="w-full"
-              onClick={handleSignIn}
-              disabled={loading}
-            >
-              {loading ? 'Connecting…' : 'Sign in with Google'}
-            </Button>
-          </div>
+        <p className="text-sm text-text-secondary">
+          Sync your local database with Google Drive. Signs in automatically if needed.
+        </p>
+
+        {syncState.lastSyncedAt && (
+          <p className="text-xs text-text-muted">
+            Last synced: {new Date(syncState.lastSyncedAt).toLocaleString('en-IN')}
+          </p>
+        )}
+        {syncState.error && (
+          <p className="text-xs text-danger">{syncState.error}</p>
+        )}
+
+        <Button
+          size="sm"
+          variant="primary"
+          className="w-full"
+          onClick={handleSync}
+          disabled={loading || syncState.status === 'syncing' || !navigator.onLine}
+        >
+          {syncState.status === 'syncing' ? 'Syncing…' : loading ? 'Connecting…' : 'Sync Now'}
+        </Button>
+
+        {!navigator.onLine && (
+          <Badge variant="warning">Offline — sync unavailable</Badge>
         )}
       </div>
     </Card>

@@ -8,22 +8,16 @@ import { INITIAL_SYNC_STATE } from '@/hooks/useSync';
 
 interface SyncContextValue {
   syncState: SyncState;
-  isSignedIn: boolean;
-  isRestoring: boolean;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   syncNow: () => Promise<void>;
-  scheduleUpload: () => void;
 }
 
 const SyncContext = createContext<SyncContextValue>({
   syncState: INITIAL_SYNC_STATE,
-  isSignedIn: false,
-  isRestoring: false,
   signIn: async () => {},
   signOut: async () => {},
   syncNow: async () => {},
-  scheduleUpload: () => {},
 });
 
 const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
@@ -31,8 +25,6 @@ const CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID as string | undefined;
 export function SyncProvider({ children }: { children: ReactNode }) {
   const { replaceDatabase } = useDatabaseContext();
   const [syncState, setSyncState] = useState<SyncState>(INITIAL_SYNC_STATE);
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
 
   const authRef = useRef<GoogleAuth | null>(null);
   const driveRef = useRef<DriveClient | null>(null);
@@ -56,16 +48,6 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     manager.setDatabaseReplacer(replaceDatabase);
     manager.startListening();
 
-    const unsubAuth = auth.onAuthChange((signed) => {
-      setIsSignedIn(signed);
-      setIsRestoring(false);
-      if (signed) {
-        manager.sync();
-      } else {
-        drive.resetCache();
-      }
-    });
-
     const unsubSync = manager.onStateChange((state) => {
       setSyncState(state);
     });
@@ -75,15 +57,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
     managerRef.current = manager;
     initializedRef.current = true;
 
-    if (auth.hadPreviousSession()) {
-      setIsRestoring(true);
-      auth.tryRestoreSession().catch(() => {
-        setIsRestoring(false);
-      });
-    }
-
     return () => {
-      unsubAuth();
       unsubSync();
       manager.stopListening();
       initializedRef.current = false;
@@ -93,6 +67,9 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   const signIn = useCallback(async () => {
     if (!authRef.current) return;
     await authRef.current.signIn();
+    if (managerRef.current) {
+      await managerRef.current.sync();
+    }
   }, []);
 
   const signOut = useCallback(async () => {
@@ -103,16 +80,16 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const syncNow = useCallback(async () => {
-    if (!managerRef.current) return;
+    if (!authRef.current || !managerRef.current) return;
+
+    if (!authRef.current.isSignedIn()) {
+      await authRef.current.signIn();
+    }
     await managerRef.current.sync();
   }, []);
 
-  const scheduleUpload = useCallback(() => {
-    managerRef.current?.scheduleUpload();
-  }, []);
-
   return (
-    <SyncContext.Provider value={{ syncState, isSignedIn, isRestoring, signIn, signOut, syncNow, scheduleUpload }}>
+    <SyncContext.Provider value={{ syncState, signIn, signOut, syncNow }}>
       {children}
     </SyncContext.Provider>
   );

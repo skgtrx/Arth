@@ -1,6 +1,4 @@
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-const SESSION_KEY = 'arth_google_session';
-const HINT_KEY = 'arth_google_hint';
 
 type AuthChangeCallback = (isSignedIn: boolean) => void;
 
@@ -33,8 +31,6 @@ export class GoogleAuth {
 
         this.accessToken = response.access_token;
         this.tokenExpiresAt = Date.now() + response.expires_in * 1000;
-        sessionStorage.setItem(SESSION_KEY, '1');
-        this.fetchAndStoreHint(response.access_token);
         this.notifyListeners(true);
 
         if (this.initPromiseResolve) {
@@ -43,23 +39,6 @@ export class GoogleAuth {
           this.initPromiseReject = null;
         }
       },
-    });
-  }
-
-  hadPreviousSession(): boolean {
-    return sessionStorage.getItem(SESSION_KEY) === '1';
-  }
-
-  tryRestoreSession(): Promise<string> {
-    if (!this.tokenClient) {
-      return Promise.reject(new Error('GoogleAuth not initialized. Call init() first.'));
-    }
-
-    const hint = sessionStorage.getItem(HINT_KEY) ?? undefined;
-    return new Promise<string>((resolve, reject) => {
-      this.initPromiseResolve = resolve;
-      this.initPromiseReject = reject;
-      this.tokenClient!.requestAccessToken({ prompt: '', hint });
     });
   }
 
@@ -77,8 +56,6 @@ export class GoogleAuth {
 
   signOut(): Promise<void> {
     return new Promise<void>((resolve) => {
-      sessionStorage.removeItem(SESSION_KEY);
-      sessionStorage.removeItem(HINT_KEY);
       if (this.accessToken) {
         google.accounts.oauth2.revoke(this.accessToken, () => {
           this.clearToken();
@@ -111,17 +88,6 @@ export class GoogleAuth {
     return () => {
       this.listeners = this.listeners.filter((l) => l !== callback);
     };
-  }
-
-  private fetchAndStoreHint(accessToken: string): void {
-    fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then((r) => r.json())
-      .then((info: { email?: string }) => {
-        if (info.email) sessionStorage.setItem(HINT_KEY, info.email);
-      })
-      .catch(() => {});
   }
 
   private clearToken(): void {

@@ -7,6 +7,7 @@ import { saveDatabase, loadDatabase } from '@/db/persistence';
 interface DatabaseContextValue {
   db: Database | null;
   isLoading: boolean;
+  hasLocalData: boolean;
   lastModified: string | null;
   persistDatabase: () => Promise<void>;
   replaceDatabase: (data: Uint8Array) => Promise<void>;
@@ -15,6 +16,7 @@ interface DatabaseContextValue {
 const DatabaseContext = createContext<DatabaseContextValue>({
   db: null,
   isLoading: true,
+  hasLocalData: false,
   lastModified: null,
   persistDatabase: async () => {},
   replaceDatabase: async () => {},
@@ -23,6 +25,7 @@ const DatabaseContext = createContext<DatabaseContextValue>({
 export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [db, setDb] = useState<Database | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasLocalData, setHasLocalData] = useState(false);
   const [lastModified, setLastModified] = useState<string | null>(null);
   const dbRef = useRef<Database | null>(null);
 
@@ -31,6 +34,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     const data = exportDatabase();
     const timestamp = await saveDatabase(data);
     setLastModified(timestamp);
+    setHasLocalData(true);
   }, []);
 
   const replaceDatabase = useCallback(async (data: Uint8Array) => {
@@ -39,6 +43,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     runMigrations(database);
     dbRef.current = database;
     setDb(database);
+    setHasLocalData(true);
     setLastModified(new Date().toISOString());
   }, []);
 
@@ -63,7 +68,10 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
         dbRef.current = database;
 
         if (persisted) {
-          if (mounted) setLastModified(persisted.lastModified);
+          if (mounted) {
+            setLastModified(persisted.lastModified);
+            setHasLocalData(true);
+          }
         }
 
         if (mounted) {
@@ -88,7 +96,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <DatabaseContext.Provider value={{ db, isLoading, lastModified, persistDatabase, replaceDatabase }}>
+    <DatabaseContext.Provider value={{ db, isLoading, hasLocalData, lastModified, persistDatabase, replaceDatabase }}>
       {children}
     </DatabaseContext.Provider>
   );

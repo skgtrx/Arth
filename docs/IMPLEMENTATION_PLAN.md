@@ -23,17 +23,17 @@
 | **14. PIN Authentication** | ✅ Complete | 6/6 |
 | **15. Seed Data Cleanup** | ✅ Complete | 4/4 |
 | **16. Sync UI & Google Drive Go-Live** | ✅ Complete | 8/8 |
-| **17. Polish & UX Fixes** | ✅ Complete | 2/2 |
+| **17. Polish & UX Fixes** | ✅ Complete | 3/3 |
 | 13. Go-Live | ⬜ Not started | 0/4 |
 
-**Overall: ~104/109 tasks complete.**
+**Overall: ~105/110 tasks complete.**
 
 ### What's Next (priority order)
 
 1. ~~**Stage 14: PIN Authentication**~~ ✅ Complete
 2. ~~**Stage 16: Sync UI**~~ ✅ Complete — Google Drive sync wired in, sign in/out, auto-sync
 3. ~~**Stage 15: Seed Data Cleanup**~~ ✅ Complete — Seed data, CSV parser deleted; Google sign-in required; empty DB for new users
-4. ~~**Stage 17: Polish & UX Fixes**~~ ✅ Complete — Silent session restore with login hint, app version display
+4. ~~**Stage 17: Polish & UX Fixes**~~ ✅ Complete — Local-first with manual sync, app version display
 5. **Stage 12: Testing & QA** — Component tests, mobile device testing
 6. **Stage 13: Go-Live** — Verify data, install PWA, start daily use
 
@@ -377,6 +377,7 @@ For consecutive rows in CSV:
 |---|------|--------|---------|
 | 17.1 | Silent Google session restore | ✅ | After sign-in, fetch user email from Google userinfo endpoint, store in `sessionStorage` as `arth_google_hint`. On page reload, pass `hint` to `requestAccessToken({ prompt: '', hint })` so GIS skips account picker for users with multiple Google accounts. |
 | 17.2 | App version display | ✅ | Vite `define` injects `__APP_VERSION__` (from package.json) and `__BUILD_TIME__` (ISO timestamp) at build time. Shown at bottom of Settings page: "Arth v0.1.0 · Built 18 May 2026, 6:08 pm". |
+| 17.3 | Local-first with manual sync | ✅ | Removed auto-sync on mutations and silent session restore (GIS Token Model always shows a popup). App now loads instantly from IndexedDB on reload — no Google popup. Sync is manual: user taps "Sync" which triggers Google sign-in if needed, then syncs. First-time users (no local data) still see sign-in screen. Removed `scheduleUpload` from all mutation paths, `tryRestoreSession`, `hadPreviousSession`, session/hint keys. |
 
 ---
 

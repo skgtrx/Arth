@@ -14,17 +14,10 @@ interface TokenClientConfig {
   callback: (response: TokenResponse) => void;
   error_callback?: (error: { type: string; message: string }) => void;
   prompt?: '' | 'none' | 'consent' | 'select_account';
-  login_hint?: string;
-}
-
-interface OverridableTokenClientConfig {
-  prompt?: string;
-  hint?: string;
-  login_hint?: string;
 }
 
 interface TokenClient {
-  requestAccessToken(overrideConfig?: OverridableTokenClientConfig): void;
+  requestAccessToken(overrideConfig?: { prompt?: string }): void;
 }
 
 interface RevokeResponse {

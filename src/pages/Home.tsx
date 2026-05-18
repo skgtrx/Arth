@@ -20,7 +20,7 @@ import { formatINR } from '@/utils/currency';
 
 export default function Home() {
   const { db, isLoading, lastModified, persistDatabase } = useDatabase();
-  const { syncState, isSignedIn, syncNow, scheduleUpload } = useSync();
+  const { syncState, syncNow } = useSync();
 
   if (isLoading || !db) {
     return (
@@ -37,9 +37,7 @@ export default function Home() {
       lastModified={lastModified}
       persistDatabase={persistDatabase}
       syncState={syncState}
-      isSignedIn={isSignedIn}
       syncNow={syncNow}
-      scheduleUpload={scheduleUpload}
     />
   );
 }
@@ -49,17 +47,13 @@ function HomeContent({
   lastModified,
   persistDatabase,
   syncState,
-  isSignedIn,
   syncNow,
-  scheduleUpload,
 }: {
   db: Database;
   lastModified: string | null;
   persistDatabase: () => Promise<void>;
   syncState: import('@/types').SyncState;
-  isSignedIn: boolean;
   syncNow: () => Promise<void>;
-  scheduleUpload: () => void;
 }) {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
@@ -107,20 +101,18 @@ function HomeContent({
   const handleSaveTransaction = useCallback(async (input: CreateTransactionInput) => {
     createTransaction(db, input);
     await persistDatabase();
-    scheduleUpload();
     refresh();
     setShowTransactionForm(false);
-  }, [db, persistDatabase, scheduleUpload, refresh]);
+  }, [db, persistDatabase, refresh]);
 
   const handleSaveTransfer = useCallback(async (inputs: CreateTransactionInput[]) => {
     for (const input of inputs) {
       createTransaction(db, input);
     }
     await persistDatabase();
-    scheduleUpload();
     refresh();
     setShowTransferForm(false);
-  }, [db, persistDatabase, scheduleUpload, refresh]);
+  }, [db, persistDatabase, refresh]);
 
   return (
     <div className="space-y-4 py-4">
@@ -139,39 +131,25 @@ function HomeContent({
       <Card>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            {isSignedIn && syncState.lastSyncedAt ? (
-              <p className="text-sm font-medium text-text-secondary">
-                Last synced: {formatRelativeTime(syncState.lastSyncedAt)}
-              </p>
-            ) : (
-              <p className="text-sm font-medium text-text-secondary">
-                Last saved: {lastModified ? formatRelativeTime(lastModified) : 'Not saved yet'}
-              </p>
-            )}
+            <p className="text-sm font-medium text-text-secondary">
+              {syncState.lastSyncedAt
+                ? `Last synced: ${formatRelativeTime(syncState.lastSyncedAt)}`
+                : `Last saved: ${lastModified ? formatRelativeTime(lastModified) : 'Not saved yet'}`}
+            </p>
             <div className="flex gap-2">
               {!navigator.onLine && <Badge variant="warning">Offline</Badge>}
               {syncState.status === 'syncing' && <Badge variant="info">Syncing…</Badge>}
               {syncState.status === 'error' && <Badge variant="danger">{syncState.error ?? 'Sync error'}</Badge>}
             </div>
           </div>
-          {isSignedIn ? (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => syncNow()}
-              disabled={syncState.status === 'syncing'}
-            >
-              {syncState.status === 'syncing' ? 'Syncing…' : 'Sync Now'}
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => persistDatabase()}
-            >
-              Save
-            </Button>
-          )}
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => syncNow()}
+            disabled={syncState.status === 'syncing' || !navigator.onLine}
+          >
+            {syncState.status === 'syncing' ? 'Syncing…' : 'Sync'}
+          </Button>
         </div>
       </Card>
 

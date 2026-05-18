@@ -14,20 +14,22 @@ import Analytics from '@/pages/Analytics';
 import Settings from '@/pages/Settings';
 
 function AppShell() {
-  const { isLoading } = useDatabase();
-  const { syncState, isSignedIn, isRestoring } = useSync();
+  const { isLoading, hasLocalData } = useDatabase();
+  const { syncState } = useSync();
 
-  if (isLoading || isRestoring) {
+  if (isLoading) {
     return <LoadingScreen />;
   }
 
-  if (!isSignedIn) {
+  if (!hasLocalData) {
     return <SignInScreen />;
   }
 
-  const topBarStatus = syncState.status === 'error'
-    ? 'synced'
-    : syncState.status;
+  const topBarStatus = !navigator.onLine
+    ? 'offline' as const
+    : syncState.status === 'error'
+      ? 'error' as const
+      : syncState.status;
 
   return (
     <BrowserRouter basename="/Arth/">

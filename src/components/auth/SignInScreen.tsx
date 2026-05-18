@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useSync } from '@/hooks/useSync';
+import { useDatabase } from '@/hooks/useDatabase';
 import Button from '@/components/ui/Button';
 
 export default function SignInScreen() {
   const { signIn } = useSync();
+  const { persistDatabase } = useDatabase();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -12,6 +14,7 @@ export default function SignInScreen() {
     setError('');
     try {
       await signIn();
+      await persistDatabase();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Sign-in failed. Please try again.');
     } finally {

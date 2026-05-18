@@ -1,6 +1,5 @@
 import { useState, useCallback } from 'react';
 import { useDatabase } from '@/hooks/useDatabase';
-import { useSync } from '@/hooks/useSync';
 import { useTransactions, pairTransferLegs } from '@/hooks/useTransactions';
 import type { Transaction, CreateTransactionInput } from '@/types';
 import { Button, Modal } from '@/components/ui';
@@ -12,12 +11,6 @@ import { paisaToRupees } from '@/utils/currency';
 
 export default function Transactions() {
   const { db, isLoading, persistDatabase } = useDatabase();
-  const { scheduleUpload } = useSync();
-
-  const persistAndSync = useCallback(async () => {
-    await persistDatabase();
-    scheduleUpload();
-  }, [persistDatabase, scheduleUpload]);
 
   if (isLoading || !db) {
     return (
@@ -28,7 +21,7 @@ export default function Transactions() {
     );
   }
 
-  return <TransactionsContent db={db} persistDatabase={persistAndSync} />;
+  return <TransactionsContent db={db} persistDatabase={persistDatabase} />;
 }
 
 function TransactionsContent({

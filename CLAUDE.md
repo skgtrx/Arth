@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Arth is a mobile-first PWA for personal finance management, replacing Google Sheets-based expense tracking. Single user, single currency (INR), Google Drive-backed, zero backend. Requires Google sign-in — data lives in Drive.
+Arth is a mobile-first PWA for personal finance management, replacing Google Sheets-based expense tracking. Single user, single currency (INR), local-first with Google Drive sync, zero backend.
 
 ## Tech Stack
 
@@ -31,9 +31,9 @@ There is no backend. The entire app runs in the browser:
 1. **React UI** renders pages and forms
 2. **sql.js** runs a full SQLite database in memory via WASM
 3. **IndexedDB** persists the serialized database locally (instant, every mutation)
-4. **Google Drive** syncs the `.db` file to the cloud (30s debounce after last change)
+4. **Google Drive** syncs the `.db` file to the cloud (manual, user-triggered)
 
-Data flows: UI → sql.js (in-memory) → IndexedDB (local) → Google Drive (cloud).
+Data flows: UI → sql.js (in-memory) → IndexedDB (local). On manual sync: IndexedDB ↔ Google Drive.
 
 ### Key Directory Layout
 
@@ -57,17 +57,25 @@ src/
 - **Transfers:** Multi-row transactions sharing a `transfer_id` (UUID). Can be 2-row (simple) or 4+-row (multi-leg). Displayed as grouped cards in the UI.
 - **Soft deletes:** Accounts, funds, categories use `is_active` flag. Deactivated items hidden from forms but preserved in historical data.
 
-## Google Auth & App Startup
+## App Startup & Sync Model
 
-Google sign-in is **required** to use the app. The startup flow:
-1. `DatabaseProvider` initializes sql.js (from IndexedDB if available, or fresh empty schema)
-2. `SyncProvider` initializes `GoogleAuth` + `DriveClient` + `SyncManager`
-3. If not signed in → `SignInScreen` is shown (no access to any app functionality)
-4. On sign-in → `SyncManager.sync()` runs: downloads DB from Drive if remote is newer
-5. If PIN is set → `LockScreen` overlay requires PIN before showing the app
-6. Full app renders with routing, navigation, and all pages
+The app is **local-first**: IndexedDB is the source of truth between syncs. Google Drive sync is manual.
 
-Uses a personal Google Cloud project in "Testing" mode (no review required). OAuth client configured with `drive.file` scope — the app can only access files it created. The app creates an `Arth/` folder in Drive containing `finance.db`. New users start with an empty database.
+**First launch (no local data):**
+1. `DatabaseProvider` initializes empty sql.js database
+2. `SignInScreen` is shown — user must sign in with Google
+3. On sign-in → `SyncManager.sync()` downloads DB from Drive (or keeps empty for new users)
+4. DB is saved to IndexedDB → app renders
+
+**Subsequent launches (local data exists):**
+1. `DatabaseProvider` loads from IndexedDB (instant, no Google popup)
+2. If PIN is set → `LockScreen` overlay requires PIN
+3. App renders immediately with local data
+4. User taps "Sync" when ready → triggers Google sign-in popup if needed → syncs with Drive
+
+**Why no auto-sync on reload:** GIS Token Model always opens a popup — `prompt: ''` only controls what's inside the popup, not whether it appears. Silent token refresh requires a backend (Code Model), which breaks our zero-backend constraint.
+
+Uses a personal Google Cloud project in "Testing" mode. OAuth client configured with `drive.file` scope — the app can only access files it created. The app creates an `Arth/` folder in Drive containing `finance.db`.
 
 ## Git Workflow
 
@@ -84,7 +92,7 @@ Uses a personal Google Cloud project in "Testing" mode (no review required). OAu
 
 1. **Full manual control** — the app makes operations fast, not automatic
 2. **Mobile-first** — phone is the primary device; all touch targets and layouts optimized accordingly
-3. **Google Drive-first** — requires sign-in; data syncs to Drive, cached locally in IndexedDB for offline use
+3. **Local-first** — IndexedDB is the source of truth; Google Drive is a manual sync target for backup/cross-device
 4. **Zero cost** — no hosting fees, no API subscriptions, no paid services
 5. **Dynamic structure** — adding accounts/funds/categories is trivial with no formula maintenance
 
