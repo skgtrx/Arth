@@ -1,10 +1,38 @@
 import { useDatabaseContext } from '@/context/DatabaseContext';
 import type { Database } from 'sql.js';
 
-export function useDatabase(): { db: Database; isLoading: false; isSeeded: boolean } | { db: null; isLoading: true; isSeeded: false } {
+interface DatabaseReady {
+  db: Database;
+  isLoading: false;
+  isSeeded: boolean;
+  lastModified: string | null;
+  persistDatabase: () => Promise<void>;
+}
+
+interface DatabaseLoading {
+  db: null;
+  isLoading: true;
+  isSeeded: false;
+  lastModified: null;
+  persistDatabase: () => Promise<void>;
+}
+
+export function useDatabase(): DatabaseReady | DatabaseLoading {
   const context = useDatabaseContext();
   if (context.isLoading || !context.db) {
-    return { db: null, isLoading: true as const, isSeeded: false };
+    return {
+      db: null,
+      isLoading: true as const,
+      isSeeded: false,
+      lastModified: null,
+      persistDatabase: context.persistDatabase,
+    };
   }
-  return { db: context.db, isLoading: false as const, isSeeded: context.isSeeded };
+  return {
+    db: context.db,
+    isLoading: false as const,
+    isSeeded: context.isSeeded,
+    lastModified: context.lastModified,
+    persistDatabase: context.persistDatabase,
+  };
 }

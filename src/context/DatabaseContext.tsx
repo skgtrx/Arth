@@ -1,41 +1,78 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import type { Database } from 'sql.js';
-import { initDatabase, closeDatabase } from '@/db/database';
+import { initDatabase, closeDatabase, exportDatabase } from '@/db/database';
 import { seedDatabase, isDatabaseSeeded } from '@/db/seed';
 import { runMigrations } from '@/db/migrations';
+import { saveDatabase, loadDatabase } from '@/db/persistence';
 
 interface DatabaseContextValue {
   db: Database | null;
   isLoading: boolean;
   isSeeded: boolean;
+  lastModified: string | null;
+  persistDatabase: () => Promise<void>;
 }
 
 const DatabaseContext = createContext<DatabaseContextValue>({
   db: null,
   isLoading: true,
   isSeeded: false,
+  lastModified: null,
+  persistDatabase: async () => {},
 });
 
 export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [db, setDb] = useState<Database | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSeeded, setIsSeeded] = useState(false);
+  const [lastModified, setLastModified] = useState<string | null>(null);
+  const dbRef = useRef<Database | null>(null);
+
+  const persistDatabase = useCallback(async () => {
+    if (!dbRef.current) return;
+    const data = exportDatabase();
+    const timestamp = await saveDatabase(data);
+    setLastModified(timestamp);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
 
     async function init() {
       try {
-        const database = await initDatabase();
+        const persisted = await loadDatabase();
+
+        let database: Database;
+        try {
+          database = persisted
+            ? await initDatabase(persisted.data)
+            : await initDatabase();
+        } catch (loadError) {
+          console.warn('Failed to load persisted database, starting fresh:', loadError);
+          database = await initDatabase();
+        }
+
         runMigrations(database);
 
-        if (!isDatabaseSeeded(database)) {
+        let seeded = isDatabaseSeeded(database);
+        if (!seeded) {
           seedDatabase(database);
+          seeded = true;
+        }
+
+        dbRef.current = database;
+
+        if (persisted) {
+          if (mounted) setLastModified(persisted.lastModified);
+        } else {
+          const data = exportDatabase();
+          const timestamp = await saveDatabase(data);
+          if (mounted) setLastModified(timestamp);
         }
 
         if (mounted) {
           setDb(database);
-          setIsSeeded(true);
+          setIsSeeded(seeded);
           setIsLoading(false);
         }
       } catch (error) {
@@ -50,12 +87,13 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
+      dbRef.current = null;
       closeDatabase();
     };
   }, []);
 
   return (
-    <DatabaseContext.Provider value={{ db, isLoading, isSeeded }}>
+    <DatabaseContext.Provider value={{ db, isLoading, isSeeded, lastModified, persistDatabase }}>
       {children}
     </DatabaseContext.Provider>
   );
