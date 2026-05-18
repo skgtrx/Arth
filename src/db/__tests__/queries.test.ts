@@ -10,6 +10,7 @@ import {
   getTransferGroup, deleteTransferGroup,
   getBalanceMatrix, getAccountTotals, getFundTotals, getLendBorrowBalances,
   getSpendByCategory, getMonthlySpendTrend, getCreditCardAnnualSpend,
+  getSavingsRate,
 } from '../queries';
 
 let db: Database;
@@ -334,6 +335,19 @@ describe('Analytics Queries', () => {
     expect(trend[0].total).toBe(300);
     expect(trend[1].month).toBe('2026-05');
     expect(trend[1].total).toBe(300);
+  });
+
+  it('getSavingsRate computes rate from salary income and savings debits', () => {
+    const { acctId, fundId, salaryId, salaryScId, savingsId, savingsScId } = seedTestData();
+    createTransaction(db, { date: '2026-04-10', categoryId: salaryId, subCategoryId: salaryScId, transactionType: 'credit', fundId, accountId: acctId, amount: 10000000 });
+    createTransaction(db, { date: '2026-04-15', categoryId: savingsId, subCategoryId: savingsScId, transactionType: 'debit', fundId, accountId: acctId, amount: 3000000 });
+
+    const result = getSavingsRate(db, '2026-04-01', '2026-04-30');
+    expect(result).toHaveLength(1);
+    expect(result[0].month).toBe('2026-04');
+    expect(result[0].income).toBe(10000000);
+    expect(result[0].savings).toBe(3000000);
+    expect(result[0].rate).toBe(30);
   });
 
   it('getCreditCardAnnualSpend totals by credit card account', () => {

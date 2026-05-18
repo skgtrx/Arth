@@ -6,3 +6,4 @@ export { default as Badge } from './Badge';
 export { default as Select } from './Select';
 export { default as Input } from './Input';
 export { default as DatePicker } from './DatePicker';
+export { default as TimeScopeSelector } from './TimeScopeSelector';
