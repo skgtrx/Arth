@@ -1,6 +1,6 @@
 # Arth — Implementation Plan
 
-**Version:** 1.1
+**Version:** 2.0
 **Date:** 2026-05-18
 **PRD Reference:** [docs/PRD.md](./PRD.md)
 
@@ -11,18 +11,29 @@
 | 1. Project Setup & Tooling | ✅ Complete | 7/7 |
 | 2. Database Layer | ✅ Complete | 11/11 |
 | 3. IndexedDB Persistence | ✅ Complete | 4/4 |
-| 4. Google Drive Sync | ✅ Complete | 7/7 (4.1 deferred to deploy) |
+| 4. Google Drive Sync (engine) | ✅ Complete | 7/7 (4.1 deferred to deploy) |
 | 5. UI Shell | ✅ Complete | 8/8 |
 | 6. Settings | ✅ Complete | 6/6 |
 | 7. Transactions | ✅ Complete | 9/9 |
 | 8. Home Dashboard | ✅ Complete | 5/5 |
 | 9. Balance Sheet | ✅ Complete | 6/6 |
 | 10. Analytics | ✅ Complete | 8/9 (budget vs actual deferred) |
-| 11. PWA & Deployment | 🟡 Partial | 8/11 (3 manual steps remain) |
+| 11. PWA & Deployment | ✅ Complete | 9/11 (2 manual steps remain) |
 | 12. Testing & QA | 🟡 Partial | 3/10 |
+| **14. PIN Authentication** | ⬜ Not started | 0/6 |
+| **15. Seed Data Cleanup** | ⬜ Not started | 0/4 |
+| **16. Sync UI & Google Drive Go-Live** | ⬜ Not started | 0/8 |
 | 13. Go-Live | ⬜ Not started | 0/4 |
 
-**Overall: ~84/95 tasks complete. Remaining: 3 manual deployment steps (Stage 11) and QA (Stage 12/13).**
+**Overall: ~84/107 tasks complete.**
+
+### What's Next (priority order)
+
+1. **Stage 14: PIN Authentication** — Lock screen, setup/reset flow, session management
+2. **Stage 15: Seed Data Cleanup** — Anonymize or remove personal data from public repo
+3. **Stage 16: Sync UI** — Wire Google Drive sync into the app, sign in/out, auto-sync
+4. **Stage 12: Testing & QA** — Component tests, mobile device testing
+5. **Stage 13: Go-Live** — Verify data, install PWA, start daily use
 
 ---
 
@@ -285,16 +296,85 @@ For consecutive rows in CSV:
 | # | Task | Status | Details |
 |---|------|--------|---------|
 | 11.1 | Configure vite-plugin-pwa | ✅ | SW registration in `main.tsx` via `registerSW({ immediate: true })`, workbox precaching 9 entries, types in tsconfig |
-| 11.2 | Create manifest.json | ✅ | `manifest.webmanifest` with PNG + SVG icon entries, proper `/arth/` scope and start_url |
+| 11.2 | Create manifest.json | ✅ | `manifest.webmanifest` with PNG + SVG icon entries, proper `/Arth/` scope and start_url |
 | 11.3 | Generate app icons | ✅ | 192x192 & 512x512 in both SVG and PNG. `scripts/generate-icons.mjs` for proper PNG rendering. |
 | 11.4 | Test PWA install flow | ⬜ | **Manual:** Install on Android Chrome, iOS Safari. Verify home screen icon, standalone mode, offline. |
 | 11.5 | Create GitHub repository | ✅ | `skgtrx/Arth` on personal GitHub |
-| 11.6 | Configure GitHub Pages deployment | ✅ | `.github/workflows/deploy.yml` — Actions deploys on push to main. Uses `VITE_GOOGLE_CLIENT_ID` from repo vars. |
-| 11.7 | Configure Vite base path | ✅ | `base: '/arth/'` in vite.config.ts, BrowserRouter basename, manifest scope all aligned |
-| 11.8 | Update OAuth redirect URIs | ⬜ | **Manual:** Add `https://skgtrx.github.io` to Google Cloud Console authorized origins/redirects |
-| 11.9 | End-to-end deployment test | ⬜ | **Manual:** Full flow on production URL after first deploy |
+| 11.6 | Configure GitHub Pages deployment | ✅ | `.github/workflows/deploy.yml` — Actions deploys on push to main. Live at `https://skgtrx.github.io/Arth/` |
+| 11.7 | Configure Vite base path | ✅ | `base: '/Arth/'` in vite.config.ts, BrowserRouter basename, manifest scope all aligned (case-sensitive) |
+| 11.8 | Update OAuth redirect URIs | ⬜ | **Manual:** Add `https://skgtrx.github.io` to Google Cloud Console authorized origins/redirects (blocked on Stage 16) |
+| 11.9 | End-to-end deployment test | ✅ | App loads and renders at production URL. Full sync E2E deferred to Stage 16. |
 | 11.10 | SPA routing on GitHub Pages | ✅ | `404.html` redirect + `main.tsx` route restoration for deep links |
 | 11.11 | Environment config | ✅ | `.env.example` documenting `VITE_GOOGLE_CLIENT_ID`, GH Actions reads from repo vars |
+
+---
+
+## Stage 14: PIN Authentication
+
+> App-level lock screen to prevent casual access on shared/lost devices.
+
+| # | Task | Status | Details |
+|---|------|--------|---------|
+| 14.1 | PIN storage schema | ⬜ | Store SHA-256 hash of PIN in `app_settings` table (new table: `key TEXT PRIMARY KEY, value TEXT`). Never store raw PIN. |
+| 14.2 | PIN setup flow | ⬜ | First-time: prompt to set 4-digit PIN in Settings. Enter PIN → confirm PIN → save hash. |
+| 14.3 | Lock screen component | ⬜ | Full-screen overlay with 4-digit input. Shown on app load if PIN is set. Numpad-style UI, mobile-optimized. |
+| 14.4 | Session management | ⬜ | In-memory `isUnlocked` flag. Unlocked for current session (survives navigation, resets on tab close/reload). |
+| 14.5 | Change PIN | ⬜ | Settings → "Change PIN": enter current PIN → enter new PIN → confirm → save new hash. |
+| 14.6 | Reset PIN | ⬜ | Settings → "Remove PIN": enter current PIN → confirm removal. Clears hash from `app_settings`. |
+
+### Design Notes
+
+- PIN hash stored in SQLite `app_settings` table, persisted to IndexedDB alongside the database
+- No lockout/rate-limiting needed — this is a casual access deterrent, not cryptographic security
+- Lock screen renders _above_ the app (portal/overlay), not as a route — prevents flash of content
+- The PIN travels with the database to Google Drive, so the same PIN works across devices
+
+---
+
+## Stage 15: Seed Data Cleanup
+
+> Remove personal/sensitive data from the public repository.
+
+| # | Task | Status | Details |
+|---|------|--------|---------|
+| 15.1 | Anonymize seed data | ⬜ | Replace personal names: Anju → "Family Fund", Gaurav → "Friend A", Zocdoc → "Employer". Redact location-specific comments (Kharadi, Pune Airport, etc.). Keep amounts and structure intact for testing. |
+| 15.2 | Remove sensitive comments | ⬜ | Scrub comments that reveal personal details (locker numbers, nicknames, specific addresses). Replace with generic descriptions. |
+| 15.3 | Add CSV import option | ⬜ | Settings → "Import CSV" button. Parse CSV (reuse `csv-parser.ts`) and insert into database. Allows loading real data at runtime without committing it to the repo. |
+| 15.4 | Gate auto-seeding | ⬜ | Add a setting or env flag to control whether the app auto-seeds on first load. Production: start empty, user imports their own data or syncs from Drive. Dev: auto-seed with anonymized test data. |
+
+### Sensitive Items Identified
+
+| Item | Location | Action |
+|------|----------|--------|
+| "Anju" (fund name) | `seed.ts` | Rename to "Family Fund" |
+| "Gaurav" (lend subcategory + comments) | `seed.ts` | Rename to "Friend A" |
+| "Zocdoc" (fund + subcategory) | `seed.ts` | Rename to "Employer" |
+| "Buggu" (comments) | `seed.ts` | Remove or replace |
+| Location refs (Kharadi, Pune Airport, etc.) | `seed.ts` comments | Replace with generic locations |
+| Locker Rent 67/68 | `seed.ts` comments | Replace with "Locker Rent" |
+
+---
+
+## Stage 16: Sync UI & Google Drive Go-Live
+
+> Wire the existing sync engine (Stage 4) into the React app. Enable real cloud sync.
+
+| # | Task | Status | Details |
+|---|------|--------|---------|
+| 16.1 | Set up Google Cloud project | ⬜ | **Manual:** Create project "Arth", enable Drive API, configure OAuth consent (Testing mode), create OAuth Client ID. Add localhost + GitHub Pages origins. |
+| 16.2 | Implement `useSync` hook | ⬜ | Full implementation: instantiate `GoogleAuth` + `DriveClient` + `SyncManager`, expose `signIn`, `signOut`, `syncNow`, `syncState`, `isSignedIn`. Read `VITE_GOOGLE_CLIENT_ID` from env. |
+| 16.3 | Add sync context/provider | ⬜ | `SyncProvider` wrapping the app. Initializes auth on mount, listens for state changes, provides context to all components. |
+| 16.4 | Sign in / sign out UI | ⬜ | Settings page → Google account section. "Sign in with Google" button when signed out, account info + "Sign out" when signed in. |
+| 16.5 | Sync status in TopBar | ⬜ | Wire `syncState` from context into `TopBar` component. Show synced/syncing/offline/error status. |
+| 16.6 | Auto-sync on mutations | ⬜ | After every `persistDatabase()` call, trigger `SyncManager.scheduleUpload()` (30s debounce). |
+| 16.7 | Sync on app load | ⬜ | On app startup (if signed in): compare local vs remote timestamps, download if remote is newer, upload if local is newer. |
+| 16.8 | Manual sync button | ⬜ | Home dashboard "Sync Now" button. Also accessible from Settings. Shows last synced timestamp. |
+
+### Prerequisites
+
+- Stage 14 (PIN) should be done first — PIN hash is stored in the database, so it syncs to Drive automatically
+- Stage 15 (Seed cleanup) should be done first — don't sync test data to Drive
+- Google Cloud project must be set up (16.1) before any sync testing
 
 ---
 
@@ -333,24 +413,24 @@ For consecutive rows in CSV:
 ## Dependencies Between Stages
 
 ```
-Stage 1 (Setup)
-  └──▶ Stage 2 (Database)
-         ├──▶ Stage 3 (IndexedDB)
-         │     └──▶ Stage 4 (Google Drive Sync)
-         └──▶ Stage 5 (UI Shell)
-               └──▶ Stage 6 (Settings) ──▶ Stage 7 (Transactions)
-                                              ├──▶ Stage 8 (Dashboard)
-                                              ├──▶ Stage 9 (Balance)
-                                              └──▶ Stage 10 (Analytics)
-                                                      └──▶ Stage 11 (PWA & Deploy)
-                                                             └──▶ Stage 12 (Testing)
-                                                                    └──▶ Stage 13 (Go-Live)
+Stages 1–11 ✅ (core app built and deployed)
+  │
+  ├──▶ Stage 14 (PIN Auth) ──────────────────┐
+  │                                           │
+  ├──▶ Stage 15 (Seed Data Cleanup) ─────────┤
+  │                                           │
+  └──▶ Google Cloud setup (manual, 16.1) ────┤
+                                              │
+                                              └──▶ Stage 16 (Sync UI)
+                                                      │
+                                                      └──▶ Stage 12 (Testing)
+                                                             └──▶ Stage 13 (Go-Live)
 ```
 
-**Parallel tracks possible:**
-- Stage 3 (IndexedDB) and Stage 5 (UI Shell) can proceed in parallel after Stage 2
-- Stage 8, 9, 10 can proceed in parallel after Stage 7
-- Stage 12 (Testing) runs continuously alongside development, with a final dedicated pass before go-live
+**Parallel tracks:**
+- Stages 14, 15, and 16.1 (Google Cloud setup) can all proceed in parallel
+- Stage 16.2+ (sync UI code) should wait for 14 and 15 to complete
+- Stage 12 (Testing) runs continuously alongside development
 
 ---
 
@@ -369,6 +449,9 @@ Stage 1 (Setup)
 | 9. Balance Sheet | 4-6 hours | Three views + reconciliation |
 | 10. Analytics | 4-6 hours | Charts, trends, time filters |
 | 11. PWA & Deployment | 2-3 hours | Service worker, manifest, GitHub Pages |
+| 14. PIN Authentication | 2-3 hours | Lock screen, setup/change/remove flow |
+| 15. Seed Data Cleanup | 1-2 hours | Anonymize data, add CSV import, gate auto-seed |
+| 16. Sync UI & Go-Live | 3-4 hours | Wire sync engine into React, sign in/out, auto-sync |
 | 12. Testing | 4-6 hours | Unit, component, device, integration |
 | 13. Go-Live | 1-2 hours | Data verification, install |
-| **Total** | **~37-56 hours** | |
+| **Total** | **~43-65 hours** | |
