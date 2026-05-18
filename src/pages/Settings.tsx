@@ -64,6 +64,10 @@ export default function Settings() {
       {activeTab === 'Funds' && <FundsSection db={db} persistDatabase={handlePersist} />}
       {activeTab === 'Categories' && <CategoriesSection db={db} persistDatabase={handlePersist} />}
       {activeTab === 'Sub-Categories' && <SubCategoriesSection db={db} persistDatabase={handlePersist} />}
+
+      <p className="pt-4 text-center text-xs text-text-muted">
+        Arth v{__APP_VERSION__} · Built {new Date(__BUILD_TIME__).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+      </p>
     </div>
   );
 }

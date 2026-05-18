@@ -23,17 +23,19 @@
 | **14. PIN Authentication** | ✅ Complete | 6/6 |
 | **15. Seed Data Cleanup** | ✅ Complete | 4/4 |
 | **16. Sync UI & Google Drive Go-Live** | ✅ Complete | 8/8 |
+| **17. Polish & UX Fixes** | ✅ Complete | 2/2 |
 | 13. Go-Live | ⬜ Not started | 0/4 |
 
-**Overall: ~102/107 tasks complete.**
+**Overall: ~104/109 tasks complete.**
 
 ### What's Next (priority order)
 
 1. ~~**Stage 14: PIN Authentication**~~ ✅ Complete
 2. ~~**Stage 16: Sync UI**~~ ✅ Complete — Google Drive sync wired in, sign in/out, auto-sync
 3. ~~**Stage 15: Seed Data Cleanup**~~ ✅ Complete — Seed data, CSV parser deleted; Google sign-in required; empty DB for new users
-4. **Stage 12: Testing & QA** — Component tests, mobile device testing
-5. **Stage 13: Go-Live** — Verify data, install PWA, start daily use
+4. ~~**Stage 17: Polish & UX Fixes**~~ ✅ Complete — Silent session restore with login hint, app version display
+5. **Stage 12: Testing & QA** — Component tests, mobile device testing
+6. **Stage 13: Go-Live** — Verify data, install PWA, start daily use
 
 ---
 
@@ -364,6 +366,17 @@ For consecutive rows in CSV:
 - Stage 14 (PIN) should be done first — PIN hash is stored in the database, so it syncs to Drive automatically
 - Stage 15 (Seed cleanup) should be done first — don't sync test data to Drive
 - Google Cloud project must be set up (16.1) before any sync testing
+
+---
+
+## Stage 17: Polish & UX Fixes
+
+> Session persistence improvements and version visibility.
+
+| # | Task | Status | Details |
+|---|------|--------|---------|
+| 17.1 | Silent Google session restore | ✅ | After sign-in, fetch user email from Google userinfo endpoint, store in `sessionStorage` as `arth_google_hint`. On page reload, pass `hint` to `requestAccessToken({ prompt: '', hint })` so GIS skips account picker for users with multiple Google accounts. |
+| 17.2 | App version display | ✅ | Vite `define` injects `__APP_VERSION__` (from package.json) and `__BUILD_TIME__` (ISO timestamp) at build time. Shown at bottom of Settings page: "Arth v0.1.0 · Built 18 May 2026, 6:08 pm". |
 
 ---
 
