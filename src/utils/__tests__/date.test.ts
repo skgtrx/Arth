@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   parseDateDMMMYYYY, toISO, getFYRange, getFYLabel,
-  getMonthRange, getYearRange, getMonthKey,
+  getMonthRange, getYearRange, getMonthKey, formatRelativeTime,
 } from '../date';
 
 describe('parseDateDMMMYYYY', () => {
@@ -103,5 +103,45 @@ describe('getYearRange', () => {
 describe('getMonthKey', () => {
   it('extracts YYYY-MM from date string', () => {
     expect(getMonthKey('2026-04-15')).toBe('2026-04');
+  });
+});
+
+describe('formatRelativeTime', () => {
+  beforeEach(() => { vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); });
+
+  it('returns "just now" for timestamps less than 60 seconds ago', () => {
+    vi.setSystemTime(new Date('2026-05-18T12:00:30Z'));
+    expect(formatRelativeTime('2026-05-18T12:00:00Z')).toBe('just now');
+  });
+
+  it('returns "just now" for future timestamps', () => {
+    vi.setSystemTime(new Date('2026-05-18T12:00:00Z'));
+    expect(formatRelativeTime('2026-05-18T12:01:00Z')).toBe('just now');
+  });
+
+  it('returns minutes for 1-59 minutes ago', () => {
+    vi.setSystemTime(new Date('2026-05-18T12:05:00Z'));
+    expect(formatRelativeTime('2026-05-18T12:00:00Z')).toBe('5 min ago');
+  });
+
+  it('returns singular hour', () => {
+    vi.setSystemTime(new Date('2026-05-18T13:00:00Z'));
+    expect(formatRelativeTime('2026-05-18T12:00:00Z')).toBe('1 hour ago');
+  });
+
+  it('returns plural hours', () => {
+    vi.setSystemTime(new Date('2026-05-18T15:00:00Z'));
+    expect(formatRelativeTime('2026-05-18T12:00:00Z')).toBe('3 hours ago');
+  });
+
+  it('returns "Yesterday" for exactly 1 day ago', () => {
+    vi.setSystemTime(new Date('2026-05-18T12:00:00Z'));
+    expect(formatRelativeTime('2026-05-17T12:00:00Z')).toBe('Yesterday');
+  });
+
+  it('returns "N days ago" for 2+ days', () => {
+    vi.setSystemTime(new Date('2026-05-18T12:00:00Z'));
+    expect(formatRelativeTime('2026-05-15T12:00:00Z')).toBe('3 days ago');
   });
 });
