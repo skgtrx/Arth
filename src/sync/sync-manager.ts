@@ -13,7 +13,6 @@ export class SyncManager {
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private syncInProgress = false;
   private pendingSync = false;
-  private folderId: string | null = null;
   private listeners: SyncStateCallback[] = [];
   private onlineHandler: (() => void) | null = null;
   private offlineHandler: (() => void) | null = null;
@@ -84,8 +83,8 @@ export class SyncManager {
       const token = await this.getValidToken();
       if (!token) return;
 
-      this.folderId = await this.drive.ensureFolder(token);
-      const remoteFile = await this.drive.findFile(token, this.folderId);
+      const folderId = await this.drive.ensureFolder(token);
+      const remoteFile = await this.drive.findFile(token, folderId);
 
       const local = await loadDatabase();
       const localModified = local?.lastModified ?? null;
@@ -94,7 +93,7 @@ export class SyncManager {
 
       if (!remoteFile && local) {
         direction = 'upload';
-        await this.drive.uploadDatabase(token, this.folderId, local.data, local.lastModified);
+        await this.drive.uploadDatabase(token, folderId, local.data, local.lastModified);
       } else if (remoteFile && !local) {
         direction = 'download';
         await this.downloadAndReplace(token, remoteFile.id);
@@ -107,7 +106,7 @@ export class SyncManager {
           await this.downloadAndReplace(token, remoteFile.id);
         } else if (localTime > remoteTime) {
           direction = 'upload';
-          await this.drive.uploadDatabase(token, this.folderId, local.data, local.lastModified);
+          await this.drive.uploadDatabase(token, folderId, local.data, local.lastModified);
         }
       }
 
@@ -168,12 +167,12 @@ export class SyncManager {
       const token = await this.getValidToken();
       if (!token) return;
 
-      this.folderId = await this.drive.ensureFolder(token);
+      const folderId = await this.drive.ensureFolder(token);
       const local = await loadDatabase();
 
       if (!local) return;
 
-      await this.drive.uploadDatabase(token, this.folderId, local.data, local.lastModified);
+      await this.drive.uploadDatabase(token, folderId, local.data, local.lastModified);
 
       this.updateState({
         status: 'idle',

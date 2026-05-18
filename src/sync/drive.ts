@@ -12,6 +12,10 @@ export interface DriveFileMetadata {
   size?: string;
 }
 
+function authHeader(accessToken: string): Record<string, string> {
+  return { Authorization: `Bearer ${accessToken}` };
+}
+
 export class DriveClient {
   private folderId: string | null = null;
   private fileId: string | null = null;
@@ -23,7 +27,7 @@ export class DriveClient {
     const searchUrl = `${DRIVE_API}/files?q=${encodeURIComponent(query)}&fields=files(id,name)&spaces=drive`;
 
     const searchRes = await fetch(searchUrl, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: authHeader(accessToken),
     });
 
     if (!searchRes.ok) {
@@ -40,7 +44,7 @@ export class DriveClient {
     const createRes = await fetch(`${DRIVE_API}/files`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        ...authHeader(accessToken),
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -63,7 +67,7 @@ export class DriveClient {
     const url = `${DRIVE_API}/files?q=${encodeURIComponent(query)}&fields=files(id,name,modifiedTime,size)&spaces=drive`;
 
     const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: authHeader(accessToken),
     });
 
     if (!res.ok) {
@@ -100,7 +104,7 @@ export class DriveClient {
     const url = `${DRIVE_API}/files/${fileId}?alt=media`;
 
     const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: authHeader(accessToken),
     });
 
     if (!res.ok) {
@@ -115,7 +119,7 @@ export class DriveClient {
     const url = `${DRIVE_API}/files/${fileId}?fields=id,name,modifiedTime,size`;
 
     const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: authHeader(accessToken),
     });
 
     if (!res.ok) {
@@ -149,7 +153,7 @@ export class DriveClient {
       {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          ...authHeader(accessToken),
           'Content-Type': `multipart/related; boundary=${BOUNDARY}`,
         },
         body,
@@ -182,7 +186,7 @@ export class DriveClient {
       {
         method: 'PATCH',
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          ...authHeader(accessToken),
           'Content-Type': `multipart/related; boundary=${BOUNDARY}`,
         },
         body,

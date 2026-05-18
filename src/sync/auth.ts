@@ -20,9 +20,7 @@ export class GoogleAuth {
       scope: SCOPES,
       callback: (response) => {
         if (response.error) {
-          this.accessToken = null;
-          this.tokenExpiresAt = 0;
-          this.notifyListeners(false);
+          this.clearToken();
           if (this.initPromiseReject) {
             this.initPromiseReject(new Error(response.error_description || response.error));
             this.initPromiseReject = null;
@@ -60,15 +58,11 @@ export class GoogleAuth {
     return new Promise<void>((resolve) => {
       if (this.accessToken) {
         google.accounts.oauth2.revoke(this.accessToken, () => {
-          this.accessToken = null;
-          this.tokenExpiresAt = 0;
-          this.notifyListeners(false);
+          this.clearToken();
           resolve();
         });
       } else {
-        this.accessToken = null;
-        this.tokenExpiresAt = 0;
-        this.notifyListeners(false);
+        this.clearToken();
         resolve();
       }
     });
@@ -94,6 +88,12 @@ export class GoogleAuth {
     return () => {
       this.listeners = this.listeners.filter((l) => l !== callback);
     };
+  }
+
+  private clearToken(): void {
+    this.accessToken = null;
+    this.tokenExpiresAt = 0;
+    this.notifyListeners(false);
   }
 
   private notifyListeners(isSignedIn: boolean): void {
