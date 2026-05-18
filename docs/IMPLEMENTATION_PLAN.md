@@ -18,18 +18,18 @@
 | 8. Home Dashboard | ✅ Complete | 5/5 |
 | 9. Balance Sheet | ✅ Complete | 6/6 |
 | 10. Analytics | ✅ Complete | 8/9 (budget vs actual deferred) |
-| 11. PWA & Deployment | ✅ Complete | 9/11 (2 manual steps remain) |
+| 11. PWA & Deployment | ✅ Complete | 11/11 |
 | 12. Testing & QA | 🟡 Partial | 3/10 |
-| **14. PIN Authentication** | ⬜ Not started | 0/6 |
+| **14. PIN Authentication** | ✅ Complete | 6/6 |
 | **15. Seed Data Cleanup** | ⬜ Not started | 0/4 |
 | **16. Sync UI & Google Drive Go-Live** | ⬜ Not started | 0/8 |
 | 13. Go-Live | ⬜ Not started | 0/4 |
 
-**Overall: ~84/107 tasks complete.**
+**Overall: ~90/107 tasks complete.**
 
 ### What's Next (priority order)
 
-1. **Stage 14: PIN Authentication** — Lock screen, setup/reset flow, session management
+1. ~~**Stage 14: PIN Authentication**~~ ✅ Complete
 2. **Stage 15: Seed Data Cleanup** — Anonymize or remove personal data from public repo
 3. **Stage 16: Sync UI** — Wire Google Drive sync into the app, sign in/out, auto-sync
 4. **Stage 12: Testing & QA** — Component tests, mobile device testing
@@ -298,11 +298,11 @@ For consecutive rows in CSV:
 | 11.1 | Configure vite-plugin-pwa | ✅ | SW registration in `main.tsx` via `registerSW({ immediate: true })`, workbox precaching 9 entries, types in tsconfig |
 | 11.2 | Create manifest.json | ✅ | `manifest.webmanifest` with PNG + SVG icon entries, proper `/Arth/` scope and start_url |
 | 11.3 | Generate app icons | ✅ | 192x192 & 512x512 in both SVG and PNG. `scripts/generate-icons.mjs` for proper PNG rendering. |
-| 11.4 | Test PWA install flow | ⬜ | **Manual:** Install on Android Chrome, iOS Safari. Verify home screen icon, standalone mode, offline. |
+| 11.4 | Test PWA install flow | ✅ | Android Chrome install verified. iOS Safari pending. |
 | 11.5 | Create GitHub repository | ✅ | `skgtrx/Arth` on personal GitHub |
 | 11.6 | Configure GitHub Pages deployment | ✅ | `.github/workflows/deploy.yml` — Actions deploys on push to main. Live at `https://skgtrx.github.io/Arth/` |
 | 11.7 | Configure Vite base path | ✅ | `base: '/Arth/'` in vite.config.ts, BrowserRouter basename, manifest scope all aligned (case-sensitive) |
-| 11.8 | Update OAuth redirect URIs | ⬜ | **Manual:** Add `https://skgtrx.github.io` to Google Cloud Console authorized origins/redirects (blocked on Stage 16) |
+| 11.8 | Update OAuth redirect URIs | ✅ | Authorized origins: localhost:5173 + skgtrx.github.io. `VITE_GOOGLE_CLIENT_ID` set as repo variable. |
 | 11.9 | End-to-end deployment test | ✅ | App loads and renders at production URL. Full sync E2E deferred to Stage 16. |
 | 11.10 | SPA routing on GitHub Pages | ✅ | `404.html` redirect + `main.tsx` route restoration for deep links |
 | 11.11 | Environment config | ✅ | `.env.example` documenting `VITE_GOOGLE_CLIENT_ID`, GH Actions reads from repo vars |
@@ -315,12 +315,12 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 14.1 | PIN storage schema | ⬜ | Store SHA-256 hash of PIN in `app_settings` table (new table: `key TEXT PRIMARY KEY, value TEXT`). Never store raw PIN. |
-| 14.2 | PIN setup flow | ⬜ | First-time: prompt to set 4-digit PIN in Settings. Enter PIN → confirm PIN → save hash. |
-| 14.3 | Lock screen component | ⬜ | Full-screen overlay with 4-digit input. Shown on app load if PIN is set. Numpad-style UI, mobile-optimized. |
-| 14.4 | Session management | ⬜ | In-memory `isUnlocked` flag. Unlocked for current session (survives navigation, resets on tab close/reload). |
-| 14.5 | Change PIN | ⬜ | Settings → "Change PIN": enter current PIN → enter new PIN → confirm → save new hash. |
-| 14.6 | Reset PIN | ⬜ | Settings → "Remove PIN": enter current PIN → confirm removal. Clears hash from `app_settings`. |
+| 14.1 | PIN storage schema | ✅ | `app_settings` table (`key TEXT PRIMARY KEY, value TEXT`), schema v2, migration for existing DBs. |
+| 14.2 | PIN setup flow | ✅ | Settings → Set PIN modal with numpad, enter + confirm, SHA-256 hash saved via `setAppSetting`. |
+| 14.3 | Lock screen component | ✅ | `LockScreen.tsx` — portal overlay (z-50), numpad (64px buttons), auto-submit on 4th digit. |
+| 14.4 | Session management | ✅ | `AuthContext.tsx` — `AuthProvider` + `useAuth` hook. `isUnlocked` starts false, set true on correct PIN or no PIN. |
+| 14.5 | Change PIN | ✅ | Settings → Change PIN modal: current PIN → new PIN → confirm → save new hash. |
+| 14.6 | Reset PIN | ✅ | Settings → Remove PIN modal: enter current PIN → confirm → clears hash from `app_settings`. |
 
 ### Design Notes
 
@@ -361,7 +361,7 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 16.1 | Set up Google Cloud project | ⬜ | **Manual:** Create project "Arth", enable Drive API, configure OAuth consent (Testing mode), create OAuth Client ID. Add localhost + GitHub Pages origins. |
+| 16.1 | Set up Google Cloud project | ✅ | Project "Arth" created, Drive API enabled, OAuth consent (Testing mode), Client ID created. Origins: localhost:5173 + skgtrx.github.io. Repo variable set. |
 | 16.2 | Implement `useSync` hook | ⬜ | Full implementation: instantiate `GoogleAuth` + `DriveClient` + `SyncManager`, expose `signIn`, `signOut`, `syncNow`, `syncState`, `isSignedIn`. Read `VITE_GOOGLE_CLIENT_ID` from env. |
 | 16.3 | Add sync context/provider | ⬜ | `SyncProvider` wrapping the app. Initializes auth on mount, listens for state changes, provides context to all components. |
 | 16.4 | Sign in / sign out UI | ⬜ | Settings page → Google account section. "Sign in with Google" button when signed out, account info + "Sign out" when signed in. |
