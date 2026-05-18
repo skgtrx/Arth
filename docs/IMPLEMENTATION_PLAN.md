@@ -167,14 +167,14 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 5.1 | Install React Router | ⬜ | `react-router-dom` for client-side routing |
-| 5.2 | Build BottomNav component | ⬜ | 4 tabs: Home, Transactions, Balance, Analytics. Highlights active tab. Fixed at bottom. |
-| 5.3 | Build TopBar component | ⬜ | App name "Arth", sync status indicator, settings gear icon |
-| 5.4 | Build PageContainer layout | ⬜ | Scrollable content area between TopBar and BottomNav |
-| 5.5 | Set up routing | ⬜ | Routes: `/` (Home), `/transactions` (Transactions), `/balance` (Balance), `/analytics` (Analytics), `/settings` (Settings) |
-| 5.6 | Build shared UI primitives | ⬜ | Button, Card, Modal, Dropdown/Select, DatePicker, NumericInput, Toggle, Badge |
-| 5.7 | Configure Tailwind theme | ⬜ | Colors, spacing, font sizes optimized for mobile |
-| 5.8 | Add app startup flow | ⬜ | Loading screen → check IndexedDB → check Google auth → load DB → render app |
+| 5.1 | Install React Router | ✅ | `react-router-dom` v7 installed, BrowserRouter with `basename="/arth/"` |
+| 5.2 | Build BottomNav component | ✅ | 4 tabs (Home, Transactions, Balance, Analytics) with inline SVG icons, NavLink active highlighting, 44px touch targets, fixed bottom with safe-area insets |
+| 5.3 | Build TopBar component | ✅ | "Arth" title, sync status indicator (synced/syncing/offline), settings gear link. Fixed top with safe-area insets |
+| 5.4 | Build PageContainer layout | ✅ | Scrollable content area with `dvh`-based spacing, safe-area padding for notched devices |
+| 5.5 | Set up routing | ✅ | Routes: `/` (Home), `/transactions`, `/balance`, `/analytics`, `/settings`. BrowserRouter with `/arth/` basename. |
+| 5.6 | Build shared UI primitives | ✅ | Button (4 variants, 3 sizes), Card, Modal (portal + `<dialog>`), Select, Input (with prefix), DatePicker, Toggle, Badge (5 variants) |
+| 5.7 | Configure Tailwind theme | ✅ | Tailwind v4 `@theme` directive with semantic color tokens (surface, accent, credit/debit, danger, warning), mobile-optimized font sizes, touch-target spacing |
+| 5.8 | Add app startup flow | ✅ | LoadingScreen with shimmer animation → DatabaseProvider loads from IndexedDB → seeds if needed → renders AppShell with routing |
 
 ---
 
