@@ -44,5 +44,10 @@
     "vite-plugin-pwa": "^1.3.0",
     "vite-plugin-static-copy": "^3.4.0",
     "vitest": "^4.1.6"
+  },
+  "overrides": {
+    "@apideck/better-ajv-errors": {
+      "ajv": "8.20.0"
+    }
   }
 }
