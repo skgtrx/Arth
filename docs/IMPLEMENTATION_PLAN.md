@@ -23,13 +23,13 @@
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 1.1 | Initialize React + Vite + TypeScript project | ⬜ | `npm create vite@latest arth -- --template react-ts` |
-| 1.2 | Install and configure Tailwind CSS | ⬜ | Tailwind v3+, configure `tailwind.config.js`, add to `index.css` |
-| 1.3 | Set up project directory structure | ⬜ | See Section: Directory Structure below |
-| 1.4 | Configure ESLint + Prettier | ⬜ | Consistent code formatting |
-| 1.5 | Set up path aliases | ⬜ | `@/` alias for `src/` in Vite config and `tsconfig.json` |
-| 1.6 | Add PWA plugin (vite-plugin-pwa) | ⬜ | Service worker generation, manifest.json, app icons |
-| 1.7 | Create app icons and manifest | ⬜ | 192x192 and 512x512 icons, theme color, app name "Arth" |
+| 1.1 | Initialize React + Vite + TypeScript project | ✅ | `npm create vite@latest arth -- --template react-ts` |
+| 1.2 | Install and configure Tailwind CSS | ✅ | Tailwind v4 via `@tailwindcss/vite`, configured in `vite.config.ts` + `index.css` |
+| 1.3 | Set up project directory structure | ✅ | All directories created per spec |
+| 1.4 | Configure ESLint + Prettier | ✅ | ESLint v9 flat config + Prettier configured |
+| 1.5 | Set up path aliases | ✅ | `@/` alias in Vite config and `tsconfig.app.json` |
+| 1.6 | Add PWA plugin (vite-plugin-pwa) | ✅ | Service worker generation, WASM precaching |
+| 1.7 | Create app icons and manifest | ✅ | 192x192 and 512x512 icons, theme color, app name "Arth" |
 
 ### Directory Structure
 
@@ -76,8 +76,6 @@ arth/
 ├── docs/
 │   ├── PRD.md
 │   └── IMPLEMENTATION_PLAN.md
-├── data/
-│   └── fy26-27-transactions.csv
 ├── index.html
 ├── vite.config.ts
 ├── tailwind.config.js
@@ -93,17 +91,17 @@ arth/
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 2.1 | Install and configure sql.js | ⬜ | `npm install sql.js`, configure WASM binary loading in Vite |
-| 2.2 | Create database initialization module | ⬜ | `db/database.ts` — load sql.js WASM, create/open DB, export helper functions |
-| 2.3 | Define schema (CREATE TABLE statements) | ⬜ | `db/schema.ts` — accounts, funds, categories, sub_categories, transactions tables with all indexes |
-| 2.4 | Implement DatabaseContext provider | ⬜ | React context that initializes DB on app load, provides query/mutate functions to all components |
-| 2.5 | Implement core query functions | ⬜ | `db/queries.ts` — CRUD for transactions, accounts, funds, categories, sub-categories |
-| 2.6 | Implement balance computation queries | ⬜ | Fund×Account balance, account totals, fund totals, lend/borrow balances |
-| 2.7 | Implement analytics queries | ⬜ | Monthly spend by category, trends over time, savings rate, cashback totals, credit card annual spend |
-| 2.8 | Build currency utility functions | ⬜ | `utils/currency.ts` — rupeesToPaisa(), paisaToRupees(), formatINR() with Indian comma notation |
-| 2.9 | Build date utility functions | ⬜ | `utils/date.ts` — parseDateDMMMYYYY(), getFYRange(), getMonthRange(), getYearRange(), toISO() |
-| 2.10 | Parse CSV and create seed data | ⬜ | `db/seed.ts` — parse the FY26-27 CSV, extract meta data, detect transfer pairs, generate INSERT statements |
-| 2.11 | Write unit tests for database layer | ⬜ | Test schema creation, CRUD operations, balance computations, seed data integrity |
+| 2.1 | Install and configure sql.js | ✅ | sql.js + vite-plugin-static-copy + vitest installed. WASM binary copied to public/ via postinstall script. |
+| 2.2 | Create database initialization module | ✅ | `db/database.ts` — WASM loading, PRAGMA foreign_keys=ON on every open, init/close/export helpers |
+| 2.3 | Define schema (CREATE TABLE statements) | ✅ | `db/schema.ts` — 6 tables (incl. schema_version), CHECK/FK/UNIQUE constraints, 6 indexes |
+| 2.4 | Implement DatabaseContext provider | ✅ | Thin React context (`db`, `isLoading`, `isSeeded`) + `useDatabase` hook |
+| 2.5 | Implement core query functions | ✅ | `db/queries.ts` — CRUD for all entities with parameterized queries, transfer group operations |
+| 2.6 | Implement balance computation queries | ✅ | Fund×Account matrix, account totals, fund totals, lend/borrow outstanding |
+| 2.7 | Implement analytics queries | ✅ | 7 queries: spend by category, monthly trend, category trend, savings rate, cashback, CC annual spend |
+| 2.8 | Build currency utility functions | ✅ | `utils/currency.ts` — rupeesToPaisa(), paisaToRupees(), formatINR() with Indian comma notation, parseAmountToPaisa() |
+| 2.9 | Build date utility functions | ✅ | `utils/date.ts` — parseDateDMMMYYYY(), getFYRange(), getFYLabel(), getMonthRange(), getYearRange(), toISO(), today(), nowISO() |
+| 2.10 | Parse CSV and create seed data | ✅ | `db/seed.ts` — pre-parsed TypeScript arrays (200 transactions, 8 accounts, 7 funds, 23 categories, 51 sub-categories). CSV parser retained as dev-time utility. |
+| 2.11 | Write unit tests for database layer | ✅ | 111 tests across 6 files: schema, queries, seed, currency, date, csv-parser |
 
 ### Transfer Pair Detection Logic (for seed)
 
@@ -129,10 +127,10 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 3.1 | Implement IndexedDB save/load | ⬜ | Serialize sql.js DB to Uint8Array, store in IndexedDB. Load on app startup. |
-| 3.2 | Auto-save on every DB mutation | ⬜ | After every INSERT/UPDATE/DELETE, serialize DB to IndexedDB immediately |
-| 3.3 | Track local version timestamp | ⬜ | Store `lastModified` timestamp alongside DB in IndexedDB |
-| 3.4 | Write tests for persistence | ⬜ | Verify data survives page reload, verify timestamp tracking |
+| 3.1 | Implement IndexedDB save/load | ✅ | `db/persistence.ts` — single-record schema (`persistence/main`), `saveDatabase()`, `loadDatabase()`, `getLastModified()`. ~60 lines, raw IndexedDB API. |
+| 3.2 | Auto-save on every DB mutation | ✅ | `persistDatabase()` exposed via DatabaseContext/useDatabase hook. Callers invoke after mutations. |
+| 3.3 | Track local version timestamp | ✅ | `lastModified` ISO timestamp stored atomically with DB in same IndexedDB record. Exposed in context. |
+| 3.4 | Write tests for persistence | ✅ | 9 tests in `persistence.test.ts` using `fake-indexeddb`: null states, round-trip, overwrite, timestamps, sql.js export/restore. 120 total tests pass. |
 
 ---
 
@@ -284,8 +282,8 @@ For consecutive rows in CSV:
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 12.1 | Unit tests — database layer | ⬜ | Schema creation, CRUD, balance computations, transfer pairing, seed data |
-| 12.2 | Unit tests — utility functions | ⬜ | Currency formatting, date parsing, FY calculations |
+| 12.1 | Unit tests — database layer | ✅ | 75 tests: schema constraints, CRUD, balance computations, transfer pairing, seed integrity (done in Stage 2) |
+| 12.2 | Unit tests — utility functions | ✅ | 36 tests: currency formatting, date parsing, FY calculations, CSV parser (done in Stage 2) |
 | 12.3 | Unit tests — sync logic | ⬜ | Debounce, conflict resolution, offline handling |
 | 12.4 | Component tests — forms | ⬜ | Transaction form validation, transfer form multi-leg behavior, dropdown filtering |
 | 12.5 | Component tests — views | ⬜ | Balance sheet computation, analytics chart data preparation, filter behavior |
