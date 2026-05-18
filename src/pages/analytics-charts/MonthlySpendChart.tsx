@@ -37,9 +37,9 @@ export default function MonthlySpendChart({ data }: Props) {
             </linearGradient>
           </defs>
           <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={(v) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={(v: number) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
           <Tooltip
-            formatter={(value) => [formatINR(Number(value)), 'Total Spend']}
+            formatter={(value) => [formatINR(Number(value ?? 0)), 'Total Spend']}
             {...TOOLTIP_STYLE}
             itemStyle={{ color: '#10b981' }}
           />

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Arth</title>
+    <script>
+      // GitHub Pages SPA redirect: encode the path into a query param
+      // and redirect to index.html which will restore the route.
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+      window.location.replace(
+        window.location.origin + '/arth/?ghp=' +
+        encodeURIComponent(path.replace('/arth/', '/') + search + hash)
+      );
+    </script>
+  </head>
+  <body></body>
+</html>

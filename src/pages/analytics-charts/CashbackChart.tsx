@@ -31,9 +31,9 @@ export default function CashbackChart({ data }: Props) {
       <ResponsiveContainer width="100%" height={200}>
         <BarChart data={chartData} margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
           <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={(v) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={(v: number) => `₹${Math.round(paisaToRupees(v)).toLocaleString('en-IN')}`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
           <Tooltip
-            formatter={(value) => [formatINR(Number(value)), 'Cashback']}
+            formatter={(value) => [formatINR(Number(value ?? 0)), 'Cashback']}
             {...TOOLTIP_STYLE}
             itemStyle={{ color: '#10b981' }}
           />

@@ -33,10 +33,10 @@ export default function SavingsRateChart({ data }: Props) {
       <ResponsiveContainer width="100%" height={240}>
         <BarChart data={chartData} margin={{ left: 4, right: 12, top: 4, bottom: 4 }}>
           <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} />
-          <YAxis tickFormatter={(v) => `${v}%`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
+          <YAxis tickFormatter={(v: number) => `${v}%`} tick={AXIS_TICK} axisLine={false} tickLine={false} />
           <Tooltip
             content={({ active, payload }) => {
-              if (!active || !payload?.[0]) return null;
+              if (!active || !payload?.[0]?.payload) return null;
               const d = payload[0].payload as typeof chartData[number];
               return (
                 <div className="rounded-lg border border-border-default bg-surface-raised px-3 py-2 text-sm">
