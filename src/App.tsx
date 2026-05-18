@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { DatabaseProvider } from '@/context/DatabaseContext';
+import { AuthProvider } from '@/context/AuthContext';
 import { useDatabase } from '@/hooks/useDatabase';
 import { BottomNav, TopBar, PageContainer, LoadingScreen } from '@/components/layout';
+import LockScreen from '@/components/auth/LockScreen';
 import Home from '@/pages/Home';
 import Transactions from '@/pages/Transactions';
 import Balance from '@/pages/Balance';
@@ -35,9 +37,12 @@ function AppShell() {
 export default function App() {
   return (
     <DatabaseProvider>
-      <BrowserRouter basename="/Arth/">
-        <AppShell />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter basename="/Arth/">
+          <LockScreen />
+          <AppShell />
+        </BrowserRouter>
+      </AuthProvider>
     </DatabaseProvider>
   );
 }

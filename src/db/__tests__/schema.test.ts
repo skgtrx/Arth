@@ -12,12 +12,13 @@ beforeEach(async () => {
 });
 
 describe('createSchema', () => {
-  it('creates all 6 tables', () => {
+  it('creates all 7 tables', () => {
     const result = db.exec(
       "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name"
     );
     const tables = result[0].values.map(r => r[0]);
     expect(tables).toContain('accounts');
+    expect(tables).toContain('app_settings');
     expect(tables).toContain('funds');
     expect(tables).toContain('categories');
     expect(tables).toContain('sub_categories');
@@ -25,13 +26,13 @@ describe('createSchema', () => {
     expect(tables).toContain('schema_version');
   });
 
-  it('sets schema version to 1', () => {
-    expect(getSchemaVersion(db)).toBe(1);
+  it('sets schema version to 2', () => {
+    expect(getSchemaVersion(db)).toBe(2);
   });
 
   it('is idempotent', () => {
     createSchema(db);
-    expect(getSchemaVersion(db)).toBe(1);
+    expect(getSchemaVersion(db)).toBe(2);
   });
 });
 

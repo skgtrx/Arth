@@ -1,6 +1,6 @@
 import type { Database } from 'sql.js';
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 const CREATE_TABLES = `
   CREATE TABLE IF NOT EXISTS schema_version (
@@ -50,6 +50,11 @@ const CREATE_TABLES = `
     transfer_id TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS app_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
   );
 `;
 
