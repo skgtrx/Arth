@@ -21,17 +21,17 @@
 | 11. PWA & Deployment | ✅ Complete | 11/11 |
 | 12. Testing & QA | 🟡 Partial | 3/10 |
 | **14. PIN Authentication** | ✅ Complete | 6/6 |
-| **15. Seed Data Cleanup** | ⬜ Not started | 0/4 |
+| **15. Seed Data Cleanup** | ✅ Complete | 4/4 |
 | **16. Sync UI & Google Drive Go-Live** | ✅ Complete | 8/8 |
 | 13. Go-Live | ⬜ Not started | 0/4 |
 
-**Overall: ~98/107 tasks complete.**
+**Overall: ~102/107 tasks complete.**
 
 ### What's Next (priority order)
 
 1. ~~**Stage 14: PIN Authentication**~~ ✅ Complete
 2. ~~**Stage 16: Sync UI**~~ ✅ Complete — Google Drive sync wired in, sign in/out, auto-sync
-3. **Stage 15: Seed Data Cleanup** — Anonymize or remove personal data from public repo
+3. ~~**Stage 15: Seed Data Cleanup**~~ ✅ Complete — Seed data, CSV parser deleted; Google sign-in required; empty DB for new users
 4. **Stage 12: Testing & QA** — Component tests, mobile device testing
 5. **Stage 13: Go-Live** — Verify data, install PWA, start daily use
 
@@ -333,25 +333,14 @@ For consecutive rows in CSV:
 
 ## Stage 15: Seed Data Cleanup
 
-> Remove personal/sensitive data from the public repository.
+> Remove personal/sensitive data from the public repository. Require Google sign-in.
 
 | # | Task | Status | Details |
 |---|------|--------|---------|
-| 15.1 | Anonymize seed data | ⬜ | Replace personal names: Anju → "Family Fund", Gaurav → "Friend A", Zocdoc → "Employer". Redact location-specific comments (Kharadi, Pune Airport, etc.). Keep amounts and structure intact for testing. |
-| 15.2 | Remove sensitive comments | ⬜ | Scrub comments that reveal personal details (locker numbers, nicknames, specific addresses). Replace with generic descriptions. |
-| 15.3 | Add CSV import option | ⬜ | Settings → "Import CSV" button. Parse CSV (reuse `csv-parser.ts`) and insert into database. Allows loading real data at runtime without committing it to the repo. |
-| 15.4 | Gate auto-seeding | ⬜ | Add a setting or env flag to control whether the app auto-seeds on first load. Production: start empty, user imports their own data or syncs from Drive. Dev: auto-seed with anonymized test data. |
-
-### Sensitive Items Identified
-
-| Item | Location | Action |
-|------|----------|--------|
-| "Anju" (fund name) | `seed.ts` | Rename to "Family Fund" |
-| "Gaurav" (lend subcategory + comments) | `seed.ts` | Rename to "Friend A" |
-| "Zocdoc" (fund + subcategory) | `seed.ts` | Rename to "Employer" |
-| "Buggu" (comments) | `seed.ts` | Remove or replace |
-| Location refs (Kharadi, Pune Airport, etc.) | `seed.ts` comments | Replace with generic locations |
-| Locker Rent 67/68 | `seed.ts` comments | Replace with "Locker Rent" |
+| 15.1 | Delete seed data | ✅ | Removed `seed.ts` (2556 lines of personal financial data), `seed.test.ts`. All sensitive data eliminated from codebase. |
+| 15.2 | Delete CSV parser | ✅ | Removed `csv-parser.ts` and `csv-parser.test.ts`. No longer needed — data lives in Google Drive, not the repo. |
+| 15.3 | Require Google sign-in | ✅ | `SignInScreen.tsx` gates the app — user must sign in with Google before accessing any functionality. App downloads DB from Drive on first sync. |
+| 15.4 | Empty DB for new users | ✅ | Removed auto-seeding from `DatabaseContext`. New users get empty schema. Added `*.db` to `.gitignore`. |
 
 ---
 

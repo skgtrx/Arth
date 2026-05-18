@@ -27,12 +27,14 @@ npm-debug.log*
 
 # OS files
 .DS_Store
-Thumbs.db
 .teamlogs/
 .claude/worktrees/
 docs/plans/
 docs/specs/
 docs/superpowers/
+
+# Database files (real data lives in Google Drive, not the repo)
+*.db
 
 # WASM files copied for dev server
 public/sql-wasm.wasm

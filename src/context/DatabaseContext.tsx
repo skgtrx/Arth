@@ -1,14 +1,12 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import type { Database } from 'sql.js';
 import { initDatabase, closeDatabase, exportDatabase } from '@/db/database';
-import { seedDatabase, isDatabaseSeeded } from '@/db/seed';
 import { runMigrations } from '@/db/migrations';
 import { saveDatabase, loadDatabase } from '@/db/persistence';
 
 interface DatabaseContextValue {
   db: Database | null;
   isLoading: boolean;
-  isSeeded: boolean;
   lastModified: string | null;
   persistDatabase: () => Promise<void>;
   replaceDatabase: (data: Uint8Array) => Promise<void>;
@@ -17,7 +15,6 @@ interface DatabaseContextValue {
 const DatabaseContext = createContext<DatabaseContextValue>({
   db: null,
   isLoading: true,
-  isSeeded: false,
   lastModified: null,
   persistDatabase: async () => {},
   replaceDatabase: async () => {},
@@ -26,7 +23,6 @@ const DatabaseContext = createContext<DatabaseContextValue>({
 export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [db, setDb] = useState<Database | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSeeded, setIsSeeded] = useState(false);
   const [lastModified, setLastModified] = useState<string | null>(null);
   const dbRef = useRef<Database | null>(null);
 
@@ -43,7 +39,6 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     runMigrations(database);
     dbRef.current = database;
     setDb(database);
-    setIsSeeded(isDatabaseSeeded(database));
     setLastModified(new Date().toISOString());
   }, []);
 
@@ -65,13 +60,6 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
         }
 
         runMigrations(database);
-
-        let seeded = isDatabaseSeeded(database);
-        if (!seeded) {
-          seedDatabase(database);
-          seeded = true;
-        }
-
         dbRef.current = database;
 
         if (persisted) {
@@ -84,7 +72,6 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
 
         if (mounted) {
           setDb(database);
-          setIsSeeded(seeded);
           setIsLoading(false);
         }
       } catch (error) {
@@ -105,7 +92,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <DatabaseContext.Provider value={{ db, isLoading, isSeeded, lastModified, persistDatabase, replaceDatabase }}>
+    <DatabaseContext.Provider value={{ db, isLoading, lastModified, persistDatabase, replaceDatabase }}>
       {children}
     </DatabaseContext.Provider>
   );
