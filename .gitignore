@@ -28,6 +28,10 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 .teamlogs/
+.claude/worktrees/
+docs/plans/
+docs/specs/
+docs/superpowers/
 
 # WASM files copied for dev server
 public/sql-wasm.wasm
