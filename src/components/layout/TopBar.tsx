@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 interface TopBarProps {
-  syncStatus?: 'synced' | 'syncing' | 'offline' | 'idle';
+  syncStatus?: 'synced' | 'syncing' | 'offline' | 'error' | 'idle';
 }
 
 export default function TopBar({ syncStatus = 'idle' }: TopBarProps) {
@@ -32,6 +32,7 @@ function SyncIndicator({ status }: { status: string }) {
     synced: { label: 'Synced', className: 'text-accent' },
     syncing: { label: 'Syncing…', className: 'text-warning animate-pulse' },
     offline: { label: 'Offline', className: 'text-text-muted' },
+    error: { label: 'Sync error', className: 'text-danger' },
   }[status];
 
   if (!config) return null;

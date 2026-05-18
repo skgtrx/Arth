@@ -1,10 +1,12 @@
 import type { SyncState } from '@/types';
+import { useSyncContext } from '@/context/SyncContext';
 
 export interface UseSyncReturn {
   syncState: SyncState;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
   syncNow: () => Promise<void>;
+  scheduleUpload: () => void;
   isSignedIn: boolean;
 }
 
@@ -14,3 +16,7 @@ export const INITIAL_SYNC_STATE: SyncState = {
   direction: 'none',
   error: null,
 };
+
+export function useSync(): UseSyncReturn {
+  return useSyncContext();
+}

@@ -7,6 +7,7 @@ interface DatabaseReady {
   isSeeded: boolean;
   lastModified: string | null;
   persistDatabase: () => Promise<void>;
+  replaceDatabase: (data: Uint8Array) => Promise<void>;
 }
 
 interface DatabaseLoading {
@@ -15,6 +16,7 @@ interface DatabaseLoading {
   isSeeded: false;
   lastModified: null;
   persistDatabase: () => Promise<void>;
+  replaceDatabase: (data: Uint8Array) => Promise<void>;
 }
 
 export function useDatabase(): DatabaseReady | DatabaseLoading {
@@ -26,6 +28,7 @@ export function useDatabase(): DatabaseReady | DatabaseLoading {
       isSeeded: false,
       lastModified: null,
       persistDatabase: context.persistDatabase,
+      replaceDatabase: context.replaceDatabase,
     };
   }
   return {
@@ -34,5 +37,6 @@ export function useDatabase(): DatabaseReady | DatabaseLoading {
     isSeeded: context.isSeeded,
     lastModified: context.lastModified,
     persistDatabase: context.persistDatabase,
+    replaceDatabase: context.replaceDatabase,
   };
 }

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from 'react';
 import type { Database } from 'sql.js';
 import { useDatabase } from '@/hooks/useDatabase';
+import { useSync } from '@/hooks/useSync';
 import type { CreateTransactionInput } from '@/types';
 import { Button, Card, Modal, Badge } from '@/components/ui';
 import TransactionForm from '@/components/forms/TransactionForm';
@@ -19,6 +20,7 @@ import { formatINR } from '@/utils/currency';
 
 export default function Home() {
   const { db, isLoading, lastModified, persistDatabase } = useDatabase();
+  const { syncState, isSignedIn, syncNow, scheduleUpload } = useSync();
 
   if (isLoading || !db) {
     return (
@@ -34,6 +36,10 @@ export default function Home() {
       db={db}
       lastModified={lastModified}
       persistDatabase={persistDatabase}
+      syncState={syncState}
+      isSignedIn={isSignedIn}
+      syncNow={syncNow}
+      scheduleUpload={scheduleUpload}
     />
   );
 }
@@ -42,10 +48,18 @@ function HomeContent({
   db,
   lastModified,
   persistDatabase,
+  syncState,
+  isSignedIn,
+  syncNow,
+  scheduleUpload,
 }: {
   db: Database;
   lastModified: string | null;
   persistDatabase: () => Promise<void>;
+  syncState: import('@/types').SyncState;
+  isSignedIn: boolean;
+  syncNow: () => Promise<void>;
+  scheduleUpload: () => void;
 }) {
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [showTransferForm, setShowTransferForm] = useState(false);
@@ -93,18 +107,20 @@ function HomeContent({
   const handleSaveTransaction = useCallback(async (input: CreateTransactionInput) => {
     createTransaction(db, input);
     await persistDatabase();
+    scheduleUpload();
     refresh();
     setShowTransactionForm(false);
-  }, [db, persistDatabase, refresh]);
+  }, [db, persistDatabase, scheduleUpload, refresh]);
 
   const handleSaveTransfer = useCallback(async (inputs: CreateTransactionInput[]) => {
     for (const input of inputs) {
       createTransaction(db, input);
     }
     await persistDatabase();
+    scheduleUpload();
     refresh();
     setShowTransferForm(false);
-  }, [db, persistDatabase, refresh]);
+  }, [db, persistDatabase, scheduleUpload, refresh]);
 
   return (
     <div className="space-y-4 py-4">
@@ -123,18 +139,39 @@ function HomeContent({
       <Card>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <p className="text-sm font-medium text-text-secondary">
-              Last saved: {lastModified ? formatRelativeTime(lastModified) : 'Not saved yet'}
-            </p>
-            {!navigator.onLine && <Badge variant="warning">Offline</Badge>}
+            {isSignedIn && syncState.lastSyncedAt ? (
+              <p className="text-sm font-medium text-text-secondary">
+                Last synced: {formatRelativeTime(syncState.lastSyncedAt)}
+              </p>
+            ) : (
+              <p className="text-sm font-medium text-text-secondary">
+                Last saved: {lastModified ? formatRelativeTime(lastModified) : 'Not saved yet'}
+              </p>
+            )}
+            <div className="flex gap-2">
+              {!navigator.onLine && <Badge variant="warning">Offline</Badge>}
+              {syncState.status === 'syncing' && <Badge variant="info">Syncing…</Badge>}
+              {syncState.status === 'error' && <Badge variant="danger">{syncState.error ?? 'Sync error'}</Badge>}
+            </div>
           </div>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => persistDatabase()}
-          >
-            Save
-          </Button>
+          {isSignedIn ? (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => syncNow()}
+              disabled={syncState.status === 'syncing'}
+            >
+              {syncState.status === 'syncing' ? 'Syncing…' : 'Sync Now'}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => persistDatabase()}
+            >
+              Save
+            </Button>
+          )}
         </div>
       </Card>
 

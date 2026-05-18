@@ -11,6 +11,7 @@ interface DatabaseContextValue {
   isSeeded: boolean;
   lastModified: string | null;
   persistDatabase: () => Promise<void>;
+  replaceDatabase: (data: Uint8Array) => Promise<void>;
 }
 
 const DatabaseContext = createContext<DatabaseContextValue>({
@@ -19,6 +20,7 @@ const DatabaseContext = createContext<DatabaseContextValue>({
   isSeeded: false,
   lastModified: null,
   persistDatabase: async () => {},
+  replaceDatabase: async () => {},
 });
 
 export function DatabaseProvider({ children }: { children: ReactNode }) {
@@ -33,6 +35,16 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     const data = exportDatabase();
     const timestamp = await saveDatabase(data);
     setLastModified(timestamp);
+  }, []);
+
+  const replaceDatabase = useCallback(async (data: Uint8Array) => {
+    closeDatabase();
+    const database = await initDatabase(data);
+    runMigrations(database);
+    dbRef.current = database;
+    setDb(database);
+    setIsSeeded(isDatabaseSeeded(database));
+    setLastModified(new Date().toISOString());
   }, []);
 
   useEffect(() => {
@@ -93,7 +105,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <DatabaseContext.Provider value={{ db, isLoading, isSeeded, lastModified, persistDatabase }}>
+    <DatabaseContext.Provider value={{ db, isLoading, isSeeded, lastModified, persistDatabase, replaceDatabase }}>
       {children}
     </DatabaseContext.Provider>
   );

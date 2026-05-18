@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useDatabase } from '@/hooks/useDatabase';
+import { useSync } from '@/hooks/useSync';
 import { Button } from '@/components/ui';
 import {
   getBalanceMatrix, getAllAccounts, getAllFunds,
@@ -15,7 +16,13 @@ type Tab = (typeof TABS)[number];
 
 export default function Balance() {
   const { db, isLoading, persistDatabase } = useDatabase();
+  const { scheduleUpload } = useSync();
   const [activeTab, setActiveTab] = useState<Tab>('By Account');
+
+  const persistAndSync = useCallback(async () => {
+    await persistDatabase();
+    scheduleUpload();
+  }, [persistDatabase, scheduleUpload]);
 
   if (isLoading || !db) {
     return (
@@ -26,7 +33,7 @@ export default function Balance() {
     );
   }
 
-  return <BalanceContent db={db} persistDatabase={persistDatabase} activeTab={activeTab} setActiveTab={setActiveTab} />;
+  return <BalanceContent db={db} persistDatabase={persistAndSync} activeTab={activeTab} setActiveTab={setActiveTab} />;
 }
 
 function BalanceContent({
