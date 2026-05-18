@@ -27,3 +27,7 @@ npm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+.teamlogs/
+
+# WASM files copied for dev server
+public/sql-wasm.wasm

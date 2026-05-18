@@ -1,7 +1,9 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
@@ -18,11 +20,23 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,wasm}'],
       },
     }),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'node_modules/sql.js/dist/sql-wasm.wasm',
+          dest: '.',
+        },
+      ],
+    }),
   ],
   base: '/arth/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  test: {
+    globals: true,
+    environment: 'node',
   },
 })
