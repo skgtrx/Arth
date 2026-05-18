@@ -169,3 +169,14 @@ export interface DateRange {
   start: string;
   end: string;
 }
+
+export type SyncStatus = 'idle' | 'syncing' | 'error' | 'offline';
+
+export type SyncDirection = 'upload' | 'download' | 'none';
+
+export interface SyncState {
+  status: SyncStatus;
+  lastSyncedAt: string | null;
+  direction: SyncDirection;
+  error: string | null;
+}
