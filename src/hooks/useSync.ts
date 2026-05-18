@@ -8,6 +8,7 @@ export interface UseSyncReturn {
   syncNow: () => Promise<void>;
   scheduleUpload: () => void;
   isSignedIn: boolean;
+  isRestoring: boolean;
 }
 
 export const INITIAL_SYNC_STATE: SyncState = {

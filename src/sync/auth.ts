@@ -1,4 +1,5 @@
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const SESSION_KEY = 'arth_google_session';
 
 type AuthChangeCallback = (isSignedIn: boolean) => void;
 
@@ -31,6 +32,7 @@ export class GoogleAuth {
 
         this.accessToken = response.access_token;
         this.tokenExpiresAt = Date.now() + response.expires_in * 1000;
+        sessionStorage.setItem(SESSION_KEY, '1');
         this.notifyListeners(true);
 
         if (this.initPromiseResolve) {
@@ -39,6 +41,22 @@ export class GoogleAuth {
           this.initPromiseReject = null;
         }
       },
+    });
+  }
+
+  hadPreviousSession(): boolean {
+    return sessionStorage.getItem(SESSION_KEY) === '1';
+  }
+
+  tryRestoreSession(): Promise<string> {
+    if (!this.tokenClient) {
+      return Promise.reject(new Error('GoogleAuth not initialized. Call init() first.'));
+    }
+
+    return new Promise<string>((resolve, reject) => {
+      this.initPromiseResolve = resolve;
+      this.initPromiseReject = reject;
+      this.tokenClient!.requestAccessToken({ prompt: '' });
     });
   }
 
@@ -56,6 +74,7 @@ export class GoogleAuth {
 
   signOut(): Promise<void> {
     return new Promise<void>((resolve) => {
+      sessionStorage.removeItem(SESSION_KEY);
       if (this.accessToken) {
         google.accounts.oauth2.revoke(this.accessToken, () => {
           this.clearToken();

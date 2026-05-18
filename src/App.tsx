@@ -15,9 +15,9 @@ import Settings from '@/pages/Settings';
 
 function AppShell() {
   const { isLoading } = useDatabase();
-  const { syncState, isSignedIn } = useSync();
+  const { syncState, isSignedIn, isRestoring } = useSync();
 
-  if (isLoading) {
+  if (isLoading || isRestoring) {
     return <LoadingScreen />;
   }
 

@@ -5,7 +5,16 @@ let mockRequestAccessToken: ReturnType<typeof vi.fn>;
 let mockRevoke: ReturnType<typeof vi.fn>;
 let capturedCallback: (response: TokenResponse) => void;
 
+const sessionStore = new Map<string, string>();
+(globalThis as Record<string, unknown>).sessionStorage = {
+  getItem: (key: string) => sessionStore.get(key) ?? null,
+  setItem: (key: string, value: string) => sessionStore.set(key, value),
+  removeItem: (key: string) => sessionStore.delete(key),
+  clear: () => sessionStore.clear(),
+};
+
 beforeEach(() => {
+  sessionStore.clear();
   mockRequestAccessToken = vi.fn();
   mockRevoke = vi.fn((_token: string, callback?: (response: RevokeResponse) => void) => {
     if (callback) callback({ successful: true });

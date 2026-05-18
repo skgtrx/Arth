@@ -21,6 +21,8 @@ const AuthContext = createContext<AuthContextValue>({
   removePin: async () => false,
 });
 
+const PIN_SESSION_KEY = 'arth_pin_unlocked';
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { db, isLoading, persistDatabase } = useDatabaseContext();
   const [isPinSet, setIsPinSet] = useState(false);
@@ -33,6 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsPinSet(pinExists);
     if (!pinExists) {
       setIsUnlocked(true);
+    } else if (sessionStorage.getItem(PIN_SESSION_KEY) === '1') {
+      setIsUnlocked(true);
     }
   }, [db, isLoading]);
 
@@ -42,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!storedHash) return false;
     const inputHash = await hashPin(pin);
     if (inputHash === storedHash) {
+      sessionStorage.setItem(PIN_SESSION_KEY, '1');
       setIsUnlocked(true);
       return true;
     }
@@ -77,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (currentHash !== storedHash) return false;
     deleteAppSetting(db, 'pin_hash');
     await persistDatabase();
+    sessionStorage.removeItem(PIN_SESSION_KEY);
     setIsPinSet(false);
     setIsUnlocked(true);
     return true;
